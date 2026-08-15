@@ -135,6 +135,8 @@ export function createSystemApi(core: ApiCore) {
     }> =>
       core.request(`/benchmark?prompt_tokens=${promptTokens}`, {
         method: "POST",
+        timeout: 600_000,
+        retries: 0,
       }),
 
     getPeakMetrics: (): Promise<{

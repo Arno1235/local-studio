@@ -239,6 +239,7 @@ export const registerMonitoringRoutes = defineRoutes((app, context) => {
           const response = yield* fetchInference(context, "/v1/chat/completions", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
+            timeoutMs: 600_000,
             body: JSON.stringify({
               model: modelId,
               messages: [{ role: "user", content: prompt }],
