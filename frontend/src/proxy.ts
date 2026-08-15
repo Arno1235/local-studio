@@ -11,6 +11,7 @@ import {
   CSRF_BOOTSTRAP_HEADER,
   CSRF_HEADER,
   evaluateRequestBoundary,
+  lanHostsEnabled,
   splitAllowedValues,
 } from "@/lib/security/request-boundary";
 
@@ -70,8 +71,11 @@ export function proxy(request: NextRequest) {
     csrfHeader: request.headers.get(CSRF_HEADER),
     tailscaleUser: request.headers.get("tailscale-user-login"),
     requestProtocol: request.nextUrl.protocol,
-    allowedTailscaleHosts: splitAllowedValues(process.env.ALLOWED_TAILSCALE_HOSTS),
+    allowedTailscaleHosts: splitAllowedValues(
+      process.env.ALLOWED_TAILSCALE_HOSTS || process.env.NEXT_PUBLIC_ALLOWED_TAILSCALE_HOSTS,
+    ),
     allowedTailscaleUsers: splitAllowedValues(process.env.ALLOWED_TAILSCALE_USERS),
+    allowedLanHosts: lanHostsEnabled(process.env.ALLOWED_LAN_HOSTS),
     csrfToken: PROCESS_CSRF_TOKEN,
   });
   if (!boundary.ok) {

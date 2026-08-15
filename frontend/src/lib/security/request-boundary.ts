@@ -15,6 +15,7 @@ export type RequestBoundaryInput = {
   requestProtocol: string;
   allowedTailscaleHosts: string[];
   allowedTailscaleUsers: string[];
+  allowedLanHosts: boolean;
   csrfToken: string;
 };
 
@@ -41,6 +42,24 @@ export function isLoopbackHost(value: string): boolean {
   return name === "localhost" || name === "127.0.0.1" || name === "::1";
 }
 
+export function isPrivateIpv4Host(value: string): boolean {
+  const name = hostname(value);
+  if (!name) return false;
+  const octets = name.split(".");
+  if (octets.length !== 4) return false;
+  const parts = octets.map((part) => Number(part));
+  if (parts.some((part) => !Number.isInteger(part) || part < 0 || part > 255)) return false;
+  const [a, b] = parts;
+  if (a === 10) return true;
+  if (a === 192 && b === 168) return true;
+  if (a === 172 && b >= 16 && b <= 31) return true;
+  return a === 169 && b === 254;
+}
+
+export function lanHostsEnabled(value: string | undefined): boolean {
+  return /^(1|true|yes)$/i.test((value ?? "").trim());
+}
+
 function isMutation(method: string): boolean {
   return ["POST", "PUT", "PATCH", "DELETE"].includes(method.toUpperCase());
 }
@@ -61,7 +80,15 @@ function resolveHost(input: RequestBoundaryInput): HostDecision {
   const host = normalizedHost(input.host);
   const forwardedHost = input.forwardedHost ? normalizedHost(input.forwardedHost) : null;
   const allowedHosts = new Set(input.allowedTailscaleHosts.map((entry) => entry.toLowerCase()));
-  const allowed = (candidate: string) => isLoopbackHost(candidate) || allowedHosts.has(candidate);
+  const allowed = (candidate: string) => {
+    const name = hostname(candidate);
+    return (
+      isLoopbackHost(candidate) ||
+      allowedHosts.has(candidate) ||
+      Boolean(name && allowedHosts.has(name)) ||
+      (input.allowedLanHosts && isPrivateIpv4Host(candidate))
+    );
+  };
 
   if (!host || !allowed(host)) {
     return { ok: false, failure: { ok: false, status: 421, error: "Host is not allowed" } };
@@ -96,9 +123,9 @@ function rejectedOrigin(
   remote: boolean,
 ): RequestBoundaryResult | null {
   if (!input.origin) return null;
-  const protocol = remote
-    ? input.forwardedProto?.split(",")[0]?.trim().toLowerCase() || "https"
-    : input.requestProtocol.replace(/:$/, "").toLowerCase();
+  const protocol =
+    (remote ? input.forwardedProto?.split(",")[0]?.trim().toLowerCase() : undefined) ||
+    input.requestProtocol.replace(/:$/, "").toLowerCase();
   try {
     const origin = new URL(input.origin);
     if (origin.host.toLowerCase() !== effectiveHost || origin.protocol !== `${protocol}:`) {

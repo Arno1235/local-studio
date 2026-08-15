@@ -1,5 +1,22 @@
 import type { NextConfig } from "next";
+import os from "os";
 import path from "path";
+
+function extraDevOrigins(): string[] {
+  const hosts = String(process.env.ALLOWED_TAILSCALE_HOSTS ?? "")
+    .split(/[\s,]+/)
+    .map((entry) => entry.trim())
+    .filter(Boolean);
+  if (!/^(1|true|yes)$/i.test((process.env.ALLOWED_LAN_HOSTS ?? "").trim())) return hosts;
+  for (const addrs of Object.values(os.networkInterfaces())) {
+    for (const addr of addrs ?? []) {
+      if (addr.internal) continue;
+      if (addr.family !== "IPv4") continue;
+      hosts.push(addr.address);
+    }
+  }
+  return [...new Set(hosts)];
+}
 
 const nextConfig: NextConfig = {
   // Workaround for Next.js 16 bug: when unset, config.generateBuildId becomes
@@ -7,7 +24,11 @@ const nextConfig: NextConfig = {
   generateBuildId: () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
   output: "standalone",
   images: { unoptimized: true },
-  allowedDevOrigins: ["127.0.0.1", "localhost"],
+  allowedDevOrigins: ["127.0.0.1", "localhost", ...extraDevOrigins()],
+  env: {
+    ALLOWED_TAILSCALE_HOSTS: process.env.ALLOWED_TAILSCALE_HOSTS ?? "",
+    ALLOWED_LAN_HOSTS: process.env.ALLOWED_LAN_HOSTS ?? "",
+  },
   // Keep the Pi SDK out of the webpack/turbopack bundle so it loads from
   // node_modules at runtime (Node-only deps, dynamic jiti loader, etc.).
   //
