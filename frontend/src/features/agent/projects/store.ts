@@ -23,6 +23,13 @@ export type ProjectsStoreDependencies = {
   getWindow?: () => BrowserWindowLike | null;
 };
 
+export const SERVER_PROJECTS_SNAPSHOT: ProjectsSnapshot = {
+  projects: [],
+  loaded: false,
+  selectedId: null,
+  gitSummaries: new Map(),
+};
+
 export type ProjectsStore = {
   getSnapshot: () => ProjectsSnapshot;
   subscribe: (listener: () => void) => () => void;
@@ -51,9 +58,9 @@ export function createProjectsStore(dependencies: ProjectsStoreDependencies = {}
   let started = false;
   let lastGitFetch: string | null = null;
   let snapshot: ProjectsSnapshot = {
-    projects: applyProjectOrder(readCachedProjects()),
+    projects: [],
     loaded: false,
-    selectedId: readSelection(),
+    selectedId: null,
     gitSummaries: new Map(),
   };
 
@@ -117,7 +124,15 @@ export function createProjectsStore(dependencies: ProjectsStoreDependencies = {}
   const start = (): void => {
     if (started) return;
     started = true;
-    void refresh();
+    queueMicrotask(() => {
+      if (!started) return;
+      const cached = applyProjectOrder(readCachedProjects());
+      const selectedId = resolveSelectedProjectId(readSelection(), cached);
+      if (cached.length > 0 || selectedId) {
+        update({ ...snapshot, projects: cached, selectedId });
+      }
+      void refresh();
+    });
   };
 
   const stop = (): void => {

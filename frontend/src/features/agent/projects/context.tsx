@@ -8,7 +8,11 @@ import {
   useSyncExternalStore,
   type ReactNode,
 } from "react";
-import { createProjectsStore, type ProjectsStore } from "@/features/agent/projects/store";
+import {
+  createProjectsStore,
+  SERVER_PROJECTS_SNAPSHOT,
+  type ProjectsStore,
+} from "@/features/agent/projects/store";
 import type { GitSummary, Project, ProjectId } from "@/features/agent/projects/types";
 
 export type ProjectsContextValue = {
@@ -43,7 +47,7 @@ export function useProjects(): ProjectsContextValue {
   const { projects, loaded, selectedId, gitSummaries } = useSyncExternalStore(
     store.subscribe,
     store.getSnapshot,
-    store.getSnapshot,
+    () => SERVER_PROJECTS_SNAPSHOT,
   );
 
   const findById = useCallback(
