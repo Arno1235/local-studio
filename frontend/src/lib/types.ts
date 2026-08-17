@@ -71,6 +71,22 @@ export type {
   VRAMCalculation,
 } from "@local-studio/contracts/observability";
 
+export type {
+  EvalCaseResult,
+  EvalCompareCell,
+  EvalCompareResponse,
+  EvalCompareRow,
+  EvalCustomSuiteWrite,
+  EvalGrader,
+  EvalHardware,
+  EvalLogLine,
+  EvalResult,
+  EvalRun,
+  EvalRunStatus,
+  EvalSuiteInfo,
+  EvalSuiteKind,
+} from "@local-studio/contracts/evals";
+
 // --- Recipes ---
 
 /**

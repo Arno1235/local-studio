@@ -14,6 +14,7 @@ const POST_TIMEOUTS = new Map([
   ["v1/audio/voices", VOICE_REFERENCE_TIMEOUT_MS],
   ["v1/audio/runtime/stop", SYSTEM_UPSTREAM_TIMEOUT_MS],
   ["benchmark", CHAT_COMPLETION_UPSTREAM_TIMEOUT_MS],
+  ["evals/runs", SYSTEM_UPSTREAM_TIMEOUT_MS],
 ]);
 
 export function getUpstreamTimeoutMs(path: string[], method = "GET"): number {
@@ -40,6 +41,9 @@ export function getUpstreamTimeoutMs(path: string[], method = "GET"): number {
   }
   if (route === "logs" || route.startsWith("logs/")) {
     return DEFAULT_UPSTREAM_TIMEOUT_MS;
+  }
+  if (route === "evals" || route.startsWith("evals/")) {
+    return SYSTEM_UPSTREAM_TIMEOUT_MS;
   }
   if (route === "v1/metrics/vllm") {
     return DEFAULT_UPSTREAM_TIMEOUT_MS;

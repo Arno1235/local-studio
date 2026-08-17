@@ -5,6 +5,7 @@ import { createRecipesApi } from "./recipes";
 import { createStudioApi } from "./studio";
 import { createSpeechApi } from "./speech";
 import { createSystemApi } from "./system";
+import { createEvalsApi } from "./evals";
 
 export function createApiClient(params: {
   baseUrl: string;
@@ -15,6 +16,7 @@ export function createApiClient(params: {
   const core = createApiCore(params);
   return {
     ...createSystemApi(core),
+    ...createEvalsApi(core),
     ...createRecipesApi(core),
     ...createLogsApi(core),
     ...createStudioApi(core),
