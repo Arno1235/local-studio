@@ -15,6 +15,7 @@ describe("left sidebar navigation", () => {
       tabs.map((tab) => [tab.href, tab.label]),
       [
         ["/", "Status"],
+        ["/evals", "Evals"],
         ["/agent/automations", "Automations"],
         ["/configure", "Configure"],
         ["/usage", "Usage"],

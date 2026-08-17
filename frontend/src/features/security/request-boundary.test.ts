@@ -18,6 +18,7 @@ const base = (overrides: Partial<RequestBoundaryInput> = {}): RequestBoundaryInp
   requestProtocol: "http:",
   allowedTailscaleHosts: ["studio.tail.example.ts.net"],
   allowedTailscaleUsers: [],
+  allowedLanHosts: false,
   csrfToken: "token",
   ...overrides,
 });
