@@ -17,6 +17,8 @@ export const CONTROLLER_EVENTS = {
   MCP_SERVER_ENABLED: "mcp_server_enabled",
   MCP_SERVER_DISABLED: "mcp_server_disabled",
   MCP_TOOL_CALLED: "mcp_tool_called",
+  EVAL_RUN: "eval_run",
+  EVAL_LOG: "eval_log",
   RUNTIME_VLLM_UPGRADED: "runtime_vllm_upgraded",
   RUNTIME_SGLANG_UPGRADED: "runtime_sglang_upgraded",
   RUNTIME_LLAMACPP_UPGRADED: "runtime_llamacpp_upgraded",
@@ -47,6 +49,8 @@ export const CONTROLLER_STREAM_EVENT_TYPES = [
   CONTROLLER_EVENTS.MCP_SERVER_ENABLED,
   CONTROLLER_EVENTS.MCP_SERVER_DISABLED,
   CONTROLLER_EVENTS.MCP_TOOL_CALLED,
+  CONTROLLER_EVENTS.EVAL_RUN,
+  CONTROLLER_EVENTS.EVAL_LOG,
   CONTROLLER_EVENTS.RUNTIME_VLLM_UPGRADED,
   CONTROLLER_EVENTS.RUNTIME_SGLANG_UPGRADED,
   CONTROLLER_EVENTS.RUNTIME_LLAMACPP_UPGRADED,
@@ -61,7 +65,8 @@ export type ControllerEventDomain =
   | "recipe"
   | "runtime"
   | "controller"
-  | "mcp";
+  | "mcp"
+  | "eval";
 
 const CONTROLLER_EVENT_DOMAIN_MAP: Record<
   ControllerStreamEventType,
@@ -85,6 +90,8 @@ const CONTROLLER_EVENT_DOMAIN_MAP: Record<
   [CONTROLLER_EVENTS.MCP_SERVER_ENABLED]: "mcp",
   [CONTROLLER_EVENTS.MCP_SERVER_DISABLED]: "mcp",
   [CONTROLLER_EVENTS.MCP_TOOL_CALLED]: "mcp",
+  [CONTROLLER_EVENTS.EVAL_RUN]: "eval",
+  [CONTROLLER_EVENTS.EVAL_LOG]: "eval",
   [CONTROLLER_EVENTS.RUNTIME_VLLM_UPGRADED]: "runtime",
   [CONTROLLER_EVENTS.RUNTIME_SGLANG_UPGRADED]: "runtime",
   [CONTROLLER_EVENTS.RUNTIME_LLAMACPP_UPGRADED]: "runtime",
@@ -97,6 +104,7 @@ export const CONTROLLER_BROWSER_EVENT_CHANNEL = {
   runtime: "vllm:runtime-event",
   controller: "vllm:controller-event",
   mcp: "vllm:controller-event",
+  eval: "vllm:eval-event",
 } as const;
 
 export type ControllerBrowserEventChannel =
