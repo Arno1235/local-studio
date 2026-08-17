@@ -15,6 +15,7 @@ import { registerAllProxyRoutes } from "../modules/proxy/routes";
 import { registerStudioRoutes } from "../modules/studio/routes";
 import { registerAudioRoutes } from "../modules/audio/routes";
 import { registerSpeechRoutes } from "../modules/speech/routes";
+import { registerEvalRoutes } from "../modules/evals/eval-routes";
 import { documentRoute, mergeRoutes, type ControllerRouteApp } from "./route-registrar";
 import {
   createAuthMiddleware,
@@ -39,6 +40,7 @@ type ControllerApplication = ReturnType<typeof registerComputeRoutes> &
   ReturnType<typeof registerStudioRoutes> &
   ReturnType<typeof registerSpeechRoutes> &
   ReturnType<typeof registerAudioRoutes> &
+  ReturnType<typeof registerEvalRoutes> &
   ReturnType<typeof registerAllProxyRoutes>;
 
 export const createApp = (
@@ -97,6 +99,7 @@ export const createApp = (
     registerStudioRoutes(app, context),
     registerSpeechRoutes(app, context),
     registerAudioRoutes(app, context),
+    registerEvalRoutes(app, context),
     registerAllProxyRoutes(app, context),
     app.get(
       "/health",

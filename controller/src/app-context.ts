@@ -25,6 +25,9 @@ import { ControllerRequestStore } from "./stores/controller-request-store";
 import { ControllerSettingsStore } from "./stores/controller-settings-store";
 import { InferenceRequestStore } from "./stores/inference-request-store";
 import { RigStore } from "./stores/rig-store";
+import { EvalStore } from "./modules/evals/eval-store";
+import { EvalService } from "./modules/evals/eval-service";
+import { createInferenceFetch } from "./modules/evals/eval-chat";
 
 export interface AppContext {
   config: Config;
@@ -45,7 +48,9 @@ export interface AppContext {
     controllerSettingsStore: ControllerSettingsStore;
     controllerRequestStore: ControllerRequestStore;
     rigStore: RigStore;
+    evalStore: EvalStore;
   };
+  evalService: EvalService;
 }
 
 export class AppContextInitializationError extends Schema.TaggedErrorClass<AppContextInitializationError>()(
@@ -163,6 +168,10 @@ export const makeAppContext = Effect.gen(function* () {
     initializeSync("rig-store.open", () => new RigStore(dbPath)),
     (resource) => releaseSafely("rig-store.close", logger, resource.close()),
   );
+  const evalStore = yield* Effect.acquireRelease(
+    initializeSync("eval-store.open", () => new EvalStore(dbPath)),
+    (resource) => releaseSafely("eval-store.close", logger, resource.close()),
+  );
   yield* initialize(
     "lifetime-metrics-store.initialize",
     lifetimeMetricsStore.ensureFirstStartedEffect(),
@@ -193,6 +202,22 @@ export const makeAppContext = Effect.gen(function* () {
   );
   yield* Effect.acquireRelease(Effect.succeed(downloadManager), (resource) =>
     releaseSafely("download-manager.shutdown", logger, resource.shutdown()),
+  );
+  const evalService = yield* Effect.acquireRelease(
+    initializeSync(
+      "eval-service.open",
+      () =>
+        new EvalService(
+          evalStore,
+          recipeStore,
+          bridge,
+          eventManager,
+          logger,
+          createInferenceFetch(config.inference_host, config.inference_port),
+          peakMetricsStore,
+        ),
+    ),
+    (resource) => releaseSafely("eval-service.shutdown", logger, resource.shutdown()),
   );
   const speechService = yield* Effect.acquireRelease(
     initializeSync(
@@ -233,7 +258,9 @@ export const makeAppContext = Effect.gen(function* () {
       controllerSettingsStore,
       controllerRequestStore,
       rigStore,
+      evalStore,
     },
+    evalService,
   } satisfies AppContext;
 });
 
