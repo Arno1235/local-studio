@@ -1,0 +1,399 @@
+{
+  "version": "v1",
+  "suite": "extended",
+  "kind": "custom-lab-suite",
+  "standardized_benchmark": false,
+  "items": [
+    {
+      "id": "smoke-math-001",
+      "category": "mathematics",
+      "prompt": "What is 17+8? Reply with only the number.",
+      "reference": "25",
+      "scoring": {
+        "exact_match": true,
+        "normalize": "strip-lower"
+      },
+      "max_tokens": 16
+    },
+    {
+      "id": "smoke-fact-001",
+      "category": "factual-qa",
+      "prompt": "What is the capital of France? Reply with only the city name.",
+      "reference": "Paris",
+      "scoring": {
+        "exact_match": true,
+        "normalize": "strip-lower"
+      },
+      "max_tokens": 16
+    },
+    {
+      "id": "smoke-json-001",
+      "category": "extraction",
+      "prompt": "Return JSON only: {\"ok\": true, \"n\": 3}",
+      "scoring": {
+        "json_valid": true,
+        "json_schema": {
+          "type": "object",
+          "required": [
+            "ok",
+            "n"
+          ]
+        }
+      },
+      "max_tokens": 64
+    },
+    {
+      "id": "smoke-instr-001",
+      "category": "instruction-following",
+      "prompt": "Reply with exactly the word: pong",
+      "reference": "pong",
+      "scoring": {
+        "exact_match": true,
+        "normalize": "strip-lower"
+      },
+      "max_tokens": 16
+    },
+    {
+      "id": "smoke-code-001",
+      "category": "coding",
+      "prompt": "Write a Python function named add(a, b) that returns a+b. Code only.",
+      "scoring": {
+        "regex": "def\\s+add\\s*\\("
+      },
+      "max_tokens": 80
+    },
+    {
+      "id": "smoke-concise-001",
+      "category": "concise",
+      "prompt": "How many days are in a leap year? Number only.",
+      "reference": "366",
+      "scoring": {
+        "contains": "366",
+        "normalize": "strip-lower"
+      },
+      "max_tokens": 16
+    },
+    {
+      "id": "std-reason-001",
+      "category": "reasoning",
+      "prompt": "A bat and a ball cost $1.10 in total. The bat costs $1.00 more than the ball. How much does the ball cost in cents? Number only.",
+      "reference": "5",
+      "scoring": {
+        "contains": "5",
+        "normalize": "strip-lower"
+      },
+      "max_tokens": 48
+    },
+    {
+      "id": "std-math-002",
+      "category": "mathematics",
+      "prompt": "Compute 12*11. Number only.",
+      "reference": "132",
+      "scoring": {
+        "exact_match": true,
+        "normalize": "strip-lower"
+      },
+      "max_tokens": 16
+    },
+    {
+      "id": "std-fact-002",
+      "category": "factual-qa",
+      "prompt": "Who wrote Pride and Prejudice? Reply with the author's full name only.",
+      "reference": "Jane Austen",
+      "scoring": {
+        "contains": "austen",
+        "normalize": "strip-lower"
+      },
+      "max_tokens": 24
+    },
+    {
+      "id": "std-code-002",
+      "category": "coding",
+      "prompt": "Write a Python function is_even(n) returning True if n is even. Code only.",
+      "scoring": {
+        "regex": "def\\s+is_even\\s*\\("
+      },
+      "max_tokens": 80
+    },
+    {
+      "id": "std-sum-001",
+      "category": "summarization",
+      "prompt": "Summarize in one sentence: The GTX 1660 Ti has 6 GB of GDDR6 memory and is used here only for local llama.cpp inference.",
+      "scoring": {
+        "regex": "6\\s*GB|1660"
+      },
+      "max_tokens": 80
+    },
+    {
+      "id": "std-extract-001",
+      "category": "extraction",
+      "prompt": "Extract JSON {\"name\":\"Ada\",\"year\":1815} from: Ada Lovelace was born in 1815. JSON only.",
+      "scoring": {
+        "json_valid": true,
+        "json_schema": {
+          "type": "object",
+          "required": [
+            "name",
+            "year"
+          ]
+        }
+      },
+      "max_tokens": 64
+    },
+    {
+      "id": "std-instr-002",
+      "category": "instruction-following",
+      "prompt": "List three primary colors as a comma-separated list with no extra text.",
+      "scoring": {
+        "regex": "red.*blue.*yellow|red.*yellow.*blue|blue.*red.*yellow"
+      },
+      "max_tokens": 32
+    },
+    {
+      "id": "std-lang-001",
+      "category": "multilingual",
+      "prompt": "Traduisez en anglais, un mot : bonjour",
+      "scoring": {
+        "contains": "hello",
+        "normalize": "strip-lower"
+      },
+      "max_tokens": 16
+    },
+    {
+      "id": "std-long-001",
+      "category": "long-context",
+      "prompt": "Context:\nalpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. alpha bravo charlie delta echo foxtrot. \nQuestion: What is the third word in the repeating phrase? One word.",
+      "scoring": {
+        "contains": "charlie",
+        "normalize": "strip-lower"
+      },
+      "max_tokens": 24
+    },
+    {
+      "id": "std-concise-002",
+      "category": "concise",
+      "prompt": "ISO 3166-1 alpha-2 code for Germany. Two letters only.",
+      "reference": "DE",
+      "scoring": {
+        "exact_match": true,
+        "normalize": "strip-lower"
+      },
+      "max_tokens": 8
+    },
+    {
+      "id": "std-math-003",
+      "category": "mathematics",
+      "prompt": "What is the remainder of 100 divided by 7? Number only.",
+      "reference": "2",
+      "scoring": {
+        "exact_match": true,
+        "normalize": "strip-lower"
+      },
+      "max_tokens": 8
+    },
+    {
+      "id": "std-reason-002",
+      "category": "reasoning",
+      "prompt": "If all bloops are razzes and some razzes are zips, does it follow that some bloops are zips? Answer yes, no, or not necessarily.",
+      "scoring": {
+        "regex": "not necessarily|no"
+      },
+      "max_tokens": 32
+    },
+    {
+      "id": "std-json-002",
+      "category": "extraction",
+      "prompt": "Return JSON {\"ids\":[1,2,3]} only.",
+      "scoring": {
+        "json_valid": true,
+        "json_schema": {
+          "type": "object",
+          "required": [
+            "ids"
+          ]
+        }
+      },
+      "max_tokens": 48
+    },
+    {
+      "id": "std-code-003",
+      "category": "coding",
+      "prompt": "Write a SQL query that selects name from users where active = 1. SQL only.",
+      "scoring": {
+        "regex": "select\\s+name\\s+from\\s+users"
+      },
+      "max_tokens": 48
+    },
+    {
+      "id": "ext-math-004",
+      "category": "mathematics",
+      "prompt": "What is 2^10? Number only.",
+      "reference": "1024",
+      "scoring": {
+        "exact_match": true,
+        "normalize": "strip-lower"
+      },
+      "max_tokens": 12
+    },
+    {
+      "id": "ext-fact-003",
+      "category": "factual-qa",
+      "prompt": "In which year did the Apollo 11 moon landing occur? Number only.",
+      "reference": "1969",
+      "scoring": {
+        "exact_match": true,
+        "normalize": "strip-lower"
+      },
+      "max_tokens": 12
+    },
+    {
+      "id": "ext-reason-003",
+      "category": "reasoning",
+      "prompt": "There are 3 boxes. Only one has a prize. You pick box 1. The host opens box 3, empty. Should you switch to box 2 to improve odds? Answer yes or no.",
+      "scoring": {
+        "contains": "yes",
+        "normalize": "strip-lower"
+      },
+      "max_tokens": 24
+    },
+    {
+      "id": "ext-code-004",
+      "category": "coding",
+      "prompt": "Write a JavaScript function identity(x){return x;} \u2014 output that function.",
+      "scoring": {
+        "regex": "function\\s+identity|identity\\s*=\\s*\\("
+      },
+      "max_tokens": 64
+    },
+    {
+      "id": "ext-sum-002",
+      "category": "summarization",
+      "prompt": "Summarize in <=12 words: MLflow stores runs, metrics, params, and artifacts for later comparison.",
+      "scoring": {
+        "regex": "mlflow|metrics|artifacts"
+      },
+      "max_tokens": 48
+    },
+    {
+      "id": "ext-extract-002",
+      "category": "extraction",
+      "prompt": "From \"temp=21C humidity=40%\" return JSON {\"temp_c\":21,\"humidity\":40}.",
+      "scoring": {
+        "json_valid": true,
+        "json_schema": {
+          "type": "object",
+          "required": [
+            "temp_c",
+            "humidity"
+          ]
+        }
+      },
+      "max_tokens": 64
+    },
+    {
+      "id": "ext-instr-003",
+      "category": "instruction-following",
+      "prompt": "Output exactly 3 bullet lines, each starting with '- ', listing: cat, dog, bird.",
+      "scoring": {
+        "regex": "(?m)^-\\s+cat.*\\n-\\s+dog.*\\n-\\s+bird"
+      },
+      "max_tokens": 48
+    },
+    {
+      "id": "ext-lang-002",
+      "category": "multilingual",
+      "prompt": "What language is 'danke'? Reply with one English word.",
+      "scoring": {
+        "contains": "german",
+        "normalize": "strip-lower"
+      },
+      "max_tokens": 16
+    },
+    {
+      "id": "ext-long-002",
+      "category": "long-context",
+      "prompt": "Remember code ZEBRA-42. Then read: padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. padding. What was the code?",
+      "scoring": {
+        "contains": "ZEBRA-42"
+      },
+      "max_tokens": 24
+    },
+    {
+      "id": "ext-concise-003",
+      "category": "concise",
+      "prompt": "Atomic number of carbon. Number only.",
+      "reference": "6",
+      "scoring": {
+        "exact_match": true,
+        "normalize": "strip-lower"
+      },
+      "max_tokens": 8
+    },
+    {
+      "id": "ext-math-005",
+      "category": "mathematics",
+      "prompt": "Solve for x: 2x+6=18. Number only.",
+      "reference": "6",
+      "scoring": {
+        "exact_match": true,
+        "normalize": "strip-lower"
+      },
+      "max_tokens": 8
+    },
+    {
+      "id": "ext-json-003",
+      "category": "extraction",
+      "prompt": "Return JSON {\"status\":\"ok\"} with no other keys.",
+      "scoring": {
+        "json_valid": true,
+        "json_schema": {
+          "type": "object",
+          "required": [
+            "status"
+          ]
+        }
+      },
+      "max_tokens": 32
+    },
+    {
+      "id": "ext-code-005",
+      "category": "coding",
+      "prompt": "Python: return the last element of list xs. One line starting with return.",
+      "scoring": {
+        "regex": "return\\s+xs\\[-1\\]"
+      },
+      "max_tokens": 32
+    },
+    {
+      "id": "ext-fact-004",
+      "category": "factual-qa",
+      "prompt": "Largest planet in the solar system? One word.",
+      "scoring": {
+        "contains": "jupiter",
+        "normalize": "strip-lower"
+      },
+      "max_tokens": 16
+    },
+    {
+      "id": "ext-reason-004",
+      "category": "reasoning",
+      "prompt": "If it rains, the ground is wet. The ground is wet. Did it necessarily rain? yes/no.",
+      "scoring": {
+        "contains": "no",
+        "normalize": "strip-lower"
+      },
+      "max_tokens": 16
+    },
+    {
+      "id": "ext-instr-004",
+      "category": "instruction-following",
+      "prompt": "Respond with uppercase only: ready",
+      "reference": "READY",
+      "scoring": {
+        "exact_match": true,
+        "normalize": "strip"
+      },
+      "max_tokens": 8
+    }
+  ]
+}
