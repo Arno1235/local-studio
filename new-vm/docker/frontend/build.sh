@@ -6,7 +6,8 @@ bun install --frozen-lockfile --cwd shared
 bun install --frozen-lockfile --cwd services/agent-runtime
 npm ci --legacy-peer-deps --prefix frontend
 npm --prefix services/agent-runtime run bundle
-rm -rf frontend/.next /src/.next
+rm -rf frontend/.next .next
+mkdir -p frontend/.next
 ln -sfn frontend/.next .next
 ln -sfn frontend/node_modules node_modules
 npm --prefix frontend exec -- next build --webpack
