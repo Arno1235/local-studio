@@ -83,8 +83,10 @@ def metrics_from_result(result: dict[str, Any]) -> dict[str, float]:
         "completion_tokens": completion_tokens,
         "total_tokens": total_tokens,
         "chunks": float(result.get("chunks") or 0),
+        "reasoning_chunks": float(result.get("reasoning_chunks") or 0),
         "error": 1.0 if result.get("error") else 0.0,
         "timeout": 1.0 if result.get("timeout") else 0.0,
+        "truncated_before_answer": 1.0 if result.get("truncated_before_answer") else 0.0,
     }
     if ttft is not None:
         out["ttft_s"] = float(ttft)
@@ -169,12 +171,14 @@ def run_evaluation(cfg: LabConfig, suite_name: str | None = None) -> dict[str, A
         )
         mlflow.log_params({k: v for k, v in flatten_params(cfg, gpu, suite).items() if v is not None})
         for item in items:
+            item_max = int(item.get("max_tokens") or 0)
+            max_tokens = max(item_max, cfg.generation.max_tokens) if item_max else cfg.generation.max_tokens
             payload = {
                 "model": cfg.model.name,
                 "messages": [{"role": "user", "content": item["prompt"]}],
                 "temperature": cfg.generation.temperature,
                 "top_p": cfg.generation.top_p,
-                "max_tokens": int(item.get("max_tokens") or cfg.generation.max_tokens),
+                "max_tokens": max_tokens,
                 "stream": True,
             }
             if cfg.generation.seed is not None:
@@ -182,6 +186,9 @@ def run_evaluation(cfg: LabConfig, suite_name: str | None = None) -> dict[str, A
             _, gpus_now = client.get("/gpus")
             before = ((gpus_now or {}).get("gpus") or [{}])[0]
             completion = stream_chat(cfg.chat_url, cfg.api_key, payload, cfg.evaluation.timeout_s)
+            used = int((completion.get("usage") or {}).get("completion_tokens") or 0)
+            if not (completion.get("text") or "").strip() and used >= max(max_tokens - 1, 1):
+                completion["truncated_before_answer"] = True
             _, gpus_after = client.get("/gpus")
             after = ((gpus_after or {}).get("gpus") or [{}])[0]
             scored = score_item(item, completion.get("text") or "", completion.get("error"))

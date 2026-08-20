@@ -72,10 +72,14 @@ def stream_chat(
         with urllib.request.urlopen(req, timeout=timeout) as resp:
             buf = b""
             while True:
-                piece = resp.read(256)
-                if not piece:
+                piece = resp.read(4096)
+                eof = not piece
+                if eof and buf.strip():
+                    buf += b"\n"
+                elif eof:
                     break
-                buf += piece
+                else:
+                    buf += piece
                 while b"\n" in buf:
                     line, buf = buf.split(b"\n", 1)
                     decoded = line.decode("utf-8", "replace").strip()
@@ -97,21 +101,28 @@ def stream_chat(
                     if obj.get("usage"):
                         usage = obj["usage"]
                     if obj.get("__verbose"):
-                        verbose = obj["__verbose"]
+                        verbose = {**verbose, **obj["__verbose"]}
                     choice = (obj.get("choices") or [{}])[0]
                     delta = choice.get("delta") or {}
                     message = choice.get("message") or {}
-                    piece_text = delta.get("content") or message.get("content") or ""
-                    if piece_text:
+                    piece_text = delta.get("content")
+                    if isinstance(piece_text, str) and piece_text:
                         text_parts.append(piece_text)
-                    if choice.get("finish_reason") and obj.get("__verbose"):
-                        verbose = obj["__verbose"]
+                    if isinstance(message.get("content"), str) and message["content"]:
+                        verbose["final_message_content"] = message["content"]
+                    reason_piece = delta.get("reasoning_content") or delta.get("reasoning")
+                    if reason_piece:
+                        verbose["reasoning_chunks"] = int(verbose.get("reasoning_chunks") or 0) + 1
+                if eof:
+                    break
     except Exception as exc:
         error = f"{type(exc).__name__}: {exc}"
     latency = time.perf_counter() - started
     timings = (verbose or {}).get("timings") or {}
+    text = "".join(text_parts).strip() or str((verbose or {}).get("final_message_content") or "").strip()
     return {
-        "text": "".join(text_parts).strip(),
+        "text": text,
+        "reasoning_chunks": int((verbose or {}).get("reasoning_chunks") or 0),
         "usage": usage,
         "verbose": verbose,
         "timings": timings,

@@ -8,7 +8,7 @@ model:
 generation:
   temperature: 0
   top_p: 0.95
-  max_tokens: 256
+  max_tokens: 512
   context_length: 8192
   seed: 42
 

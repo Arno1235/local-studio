@@ -48,7 +48,7 @@ class ModelConfig:
 class GenerationConfig:
     temperature: float = 0.0
     top_p: float = 0.95
-    max_tokens: int = 256
+    max_tokens: int = 512
     context_length: int = 8192
     seed: int | None = 42
 
@@ -108,7 +108,7 @@ def load_config(path: str | Path | None = None) -> LabConfig:
         generation=GenerationConfig(
             temperature=float(gen.get("temperature", 0.0)),
             top_p=float(gen.get("top_p", 0.95)),
-            max_tokens=int(gen.get("max_tokens", 256)),
+            max_tokens=int(gen.get("max_tokens", 512)),
             context_length=int(gen.get("context_length", 8192)),
             seed=None if gen.get("seed") in (None, "", "none") else int(gen.get("seed", 42)),
         ),

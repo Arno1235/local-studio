@@ -12,6 +12,8 @@ Custom lab suites for OpenAI-compatible local endpoints. This is **not** MMLU, H
 
 Default semantic path: generate a Cursor prompt, paste it into Cursor, save JSON, import. Cursor is not called through an API. No OpenAI/Anthropic/Gemini keys are required.
 
+Gemma 4 E4B IT may emit a `reasoning_content` thinking channel before the visible answer. The runner scores only `content`, and uses `max(item.max_tokens, generation.max_tokens)` so thinking cannot consume the entire budget. Empty `content` with `completion_tokens` near the cap is logged as `truncated_before_answer`.
+
 ## Commands
 
 ```bash
