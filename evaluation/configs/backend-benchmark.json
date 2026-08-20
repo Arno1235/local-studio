@@ -1,0 +1,5 @@
+{
+  "name": "old-pc-gemma-4-e4b-it-q4km",
+  "prompt": "You are a careful assistant running on a local GPU. Write a 6-sentence explanation of why offloading every transformer layer to a 6 GB NVIDIA GPU matters for llama.cpp latency. Use plain language.",
+  "generation_tokens": 64
+}

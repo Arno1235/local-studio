@@ -1,0 +1,37 @@
+services:
+  frontend:
+    image: node:22-bookworm
+    working_dir: /app/frontend
+    volumes:
+      - ../frontend:/app/frontend
+      - ../controller/contracts:/app/controller/contracts
+    environment:
+      BACKEND_URL: ${BACKEND_URL:-http://192.168.0.69:8080}
+      LOCAL_STUDIO_API_KEY: ${LOCAL_STUDIO_API_KEY:-}
+      PORT: ${FRONTEND_PORT:-4783}
+      HOSTNAME: 0.0.0.0
+    command: ["bash", "-lc", "npm start"]
+    ports:
+      - "${FRONTEND_PORT:-4783}:4783"
+    restart: unless-stopped
+    extra_hosts:
+      - "old-pc:192.168.0.69"
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.22.1
+    command:
+      - mlflow
+      - server
+      - --host
+      - 0.0.0.0
+      - --port
+      - "5000"
+      - --backend-store-uri
+      - sqlite:///mlflow/mlflow.db
+      - --default-artifact-root
+      - /mlflow/artifacts
+    volumes:
+      - ./mlflow:/mlflow
+    ports:
+      - "${MLFLOW_PORT:-5000}:5000"
+    restart: unless-stopped
