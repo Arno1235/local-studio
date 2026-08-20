@@ -11,8 +11,6 @@ evaluation/output
 evaluation/.venv
 *.gguf
 *.log
-frontend/desktop/**
-!frontend/desktop/project.mjs
 docs
 .cursor
 agent-transcripts

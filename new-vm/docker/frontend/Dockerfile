@@ -11,7 +11,6 @@ COPY controller ./controller
 COPY shared ./shared
 COPY services ./services
 COPY frontend ./frontend
-COPY frontend/desktop/project.mjs ./frontend/desktop/project.mjs
 COPY AGENTS.md ./
 COPY new-vm/docker/frontend/build.sh /tmp/build-frontend.sh
 RUN chmod 755 /tmp/build-frontend.sh && /tmp/build-frontend.sh
