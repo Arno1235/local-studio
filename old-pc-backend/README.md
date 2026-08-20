@@ -90,7 +90,7 @@ Reports write to `evaluation/reports/` (gitignored except `.gitkeep`). First mod
 
 1. Confirm `nvidia-smi` lists the 1660 Ti with free VRAM.
 2. Confirm `$LOCAL_STUDIO_LLAMA_BIN --version` and CUDA in the binary (`ggml-cuda` / `--n-gpu-layers`).
-3. Recipe must set `"backend": "llamacpp"` and `"extra_args": { "n-gpu-layers": -1 }`.
+3. Recipe must set `"backend": "llamacpp"` and `"extra_args": { "n-gpu-layers": "all" }`.
 4. After launch, read `$LOCAL_STUDIO_DATA_DIR/instances/logs/llm.log` for `offloaded N/N layers to GPU` and `using device CUDA`.
 5. `nvidia-smi` must show `llama-server` using MiB on GPU 0. If layers are `0/N` or only CPU buffers grow, VRAM is exhausted — lower `max_model_len` (try 2048) rather than CPU offload.
 6. Do not switch this card to vLLM or SGLang.

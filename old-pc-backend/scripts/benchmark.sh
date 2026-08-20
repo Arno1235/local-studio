@@ -47,8 +47,10 @@ path, ctx = sys.argv[1], int(sys.argv[2])
 with open(path, encoding="utf-8") as handle:
     recipe = json.load(handle)
 recipe["max_model_len"] = ctx
-recipe["extra_args"] = dict(recipe.get("extra_args") or {})
-recipe["extra_args"]["n-gpu-layers"] = "all"
+recipe["runtime"] = {
+    "kind": "binary",
+    "ref": os.environ.get("LOCAL_STUDIO_LLAMA_BIN") or recipe.get("runtime", {}).get("ref") or "llama-server",
+}
 json.dump(recipe, sys.stdout)
 PY
 }
