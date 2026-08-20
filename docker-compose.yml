@@ -1,27 +1,55 @@
-# Infrastructure services only — provisions remote-host infra (postgres,
-# consumed by litellm on that host). The Local Studio app itself does not
-# consume postgres.
-# Controller and frontend run natively on the host (not in Docker)
-# because they need nvidia-smi access and host process visibility.
+name: llm-lab
 
 services:
-  postgres:
-    image: postgres:16
-    container_name: local-studio-postgres
-    # Bind to loopback only — the native controller connects from the same host.
-    # Do not expose Postgres on all interfaces.
-    ports:
-      - "127.0.0.1:5432:5432"
+  local-studio-frontend:
+    build:
+      context: .
+      dockerfile: new-vm/docker/frontend/Dockerfile
+    image: local-studio-frontend:lab
+    container_name: local-studio-frontend
+    env_file:
+      - .env
     environment:
-      - POSTGRES_USER=${POSTGRES_USER:-postgres}
-      # Set POSTGRES_PASSWORD in .env.local; the default is for local dev only.
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgres}
-      - POSTGRES_DB=${POSTGRES_DB:-local_studio}
+      HOSTNAME: "0.0.0.0"
+      PORT: "4783"
+      NODE_ENV: production
+      BACKEND_URL: ${OLD_PC_LOCAL_STUDIO_URL}
+      API_KEY: ${OLD_PC_LOCAL_STUDIO_API_KEY}
+      LOCAL_STUDIO_API_KEY: ${OLD_PC_LOCAL_STUDIO_API_KEY}
+      ALLOWED_LAN_HOSTS: "true"
+      ALLOWED_TAILSCALE_HOSTS: ${NEW_VM_PUBLIC_HOST:-192.168.0.230}
+      LOCAL_STUDIO_DATA_DIR: /var/lib/local-studio
+    ports:
+      - "${FRONTEND_PORT:-4783}:4783"
     volumes:
-      - ./data/postgres:/var/lib/postgresql/data
+      - ./data/frontend:/var/lib/local-studio
+    restart: unless-stopped
+    extra_hosts:
+      - "old-pc:${OLD_PC_HOST:-192.168.0.69}"
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:4783/"]
+      interval: 20s
+      timeout: 5s
+      retries: 8
+      start_period: 90s
+
+  mlflow:
+    build:
+      context: .
+      dockerfile: new-vm/docker/mlflow/Dockerfile
+    image: llm-lab-mlflow:3.15.1
+    container_name: mlflow
+    environment:
+      MLFLOW_HOST: "0.0.0.0"
+      MLFLOW_PORT: "5000"
+    ports:
+      - "${MLFLOW_PORT:-5000}:5000"
+    volumes:
+      - ./data/mlflow:/mlflow
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:5000/health"]
+      interval: 20s
       timeout: 5s
-      retries: 5
+      retries: 8
+      start_period: 25s
