@@ -4,7 +4,7 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 RUN curl -fsSL https://bun.sh/install | bash
 ENV PATH="/root/.bun/bin:${PATH}"
-WORKDIR /src
+WORKDIR /opt/local-studio
 COPY package.json ./
 COPY scripts ./scripts
 COPY controller ./controller

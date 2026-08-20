@@ -1,6 +1,6 @@
 #!/bin/sh
 set -eu
-cd /src
+cd /opt/local-studio
 bun install --frozen-lockfile --cwd controller
 bun install --frozen-lockfile --cwd shared
 bun install --frozen-lockfile --cwd services/agent-runtime
@@ -19,7 +19,7 @@ elif [ -f frontend/.next/standalone/frontend/server.js ] || [ -f frontend/.next/
   cp -a frontend/.next/standalone/. /out/
 else
   echo "standalone server.js was not found" >&2
-  find /src -name server.js | head -n 50 >&2
+  find /opt/local-studio -name server.js | head -n 50 >&2
   exit 1
 fi
 if [ -d .next/static ]; then
