@@ -26,7 +26,7 @@ def record_programmatic_genai(payload: dict[str, Any]) -> dict[str, Any]:
     def deterministic_pass(outputs, expectations):  # noqa: ARG001
         value = (expectations or {}).get("automatic_pass")
         if value is None:
-            return None
+            return 0.0
         return 1.0 if value else 0.0
 
     try:

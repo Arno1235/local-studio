@@ -10,7 +10,7 @@ rm -rf frontend/.next .next
 mkdir -p frontend/.next
 ln -sfn frontend/.next .next
 ln -sfn frontend/node_modules node_modules
-npm --prefix frontend exec -- next build --webpack
+(cd frontend && npx --no-install next build --webpack)
 node scripts/project.mjs complete-standalone
 node scripts/project.mjs assert-standalone
 mkdir -p /out

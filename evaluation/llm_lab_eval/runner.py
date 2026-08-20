@@ -255,8 +255,13 @@ def run_evaluation(cfg: LabConfig, suite_name: str | None = None) -> dict[str, A
             {
                 "hardware.vram_used_mb": float(gpu.get("vram_used_mb") or 0),
                 "hardware.peak_vram_mb": peak_vram,
-                "hardware.cpu_offloaded_layers": float(gpu.get("cpu_offloaded_layers") or 0),
+                "hardware.cpu_offloaded_layers": (
+                    float(gpu["cpu_offloaded_layers"])
+                    if gpu.get("cpu_offloaded_layers") is not None
+                    else -1.0
+                ),
                 "hardware.full_gpu_residency": 1.0 if gpu.get("full_gpu_residency") else 0.0,
+                "hardware.full_gpu_residency_verified": 1.0 if gpu.get("full_gpu_residency_verified") else 0.0,
             }
         )
         payload = {
