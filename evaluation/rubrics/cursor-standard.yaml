@@ -1,0 +1,13 @@
+name: cursor-standard
+scale: "1-5 integers, 5 is best, null if not applicable"
+criteria:
+  correctness: Does the answer match the question and any reference material?
+  relevance: Does it stay on task without unrelated material?
+  instruction_following: Does it obey constraints such as format, length, or language?
+  completeness: Are the necessary parts present?
+  reasoning_quality: For reasoning/math, is the method sound even if terse?
+  factuality: When a reference is present, is the answer consistent with it?
+  coding_quality: For code tasks, is the snippet valid and usable?
+  structured_output_quality: For JSON/schema tasks, is the structure correct?
+  score: Overall integer 1-5 for this case
+winner: For single-model runs use A. Use B or TIE only in explicit pairwise packages.

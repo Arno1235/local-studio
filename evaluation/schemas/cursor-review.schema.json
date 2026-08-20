@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["evaluation_run_id", "judge", "results"],
+  "properties": {
+    "evaluation_run_id": { "type": "string", "minLength": 1 },
+    "judge": { "type": "string", "enum": ["cursor-manual", "human"] },
+    "results": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["test_id", "score", "rationale"],
+        "properties": {
+          "test_id": { "type": "string", "minLength": 1 },
+          "winner": { "type": ["string", "null"], "enum": ["A", "B", "TIE", "", null] },
+          "correctness": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+          "relevance": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+          "instruction_following": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+          "completeness": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+          "reasoning_quality": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+          "factuality": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+          "coding_quality": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+          "structured_output_quality": { "type": ["integer", "null"], "minimum": 1, "maximum": 5 },
+          "score": { "type": "integer", "minimum": 1, "maximum": 5 },
+          "rationale": { "type": "string", "minLength": 3 }
+        }
+      }
+    }
+  }
+}
