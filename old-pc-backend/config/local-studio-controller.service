@@ -1,0 +1,23 @@
+[Unit]
+Description=Local Studio controller (LAN GPU backend :8080)
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=120
+StartLimitBurst=20
+
+[Service]
+Type=simple
+WorkingDirectory=/home/anon/Documents/local-studio-fork
+EnvironmentFile=/home/anon/Documents/local-studio-fork/.env.local
+Environment=PATH=/home/anon/.local/bin:/home/anon/.bun/bin:/usr/local/cuda/bin:/usr/bin:/bin
+Environment=CUDA_HOME=/usr/local/cuda
+ExecStart=/home/anon/.bun/bin/bun /home/anon/Documents/local-studio-fork/controller/src/main.ts
+Restart=on-failure
+RestartSec=5
+KillMode=mixed
+TimeoutStopSec=20
+StandardOutput=append:/home/anon/.local/share/local-studio/controller.log
+StandardError=append:/home/anon/.local/share/local-studio/controller.log
+
+[Install]
+WantedBy=default.target
