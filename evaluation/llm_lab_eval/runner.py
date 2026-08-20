@@ -151,6 +151,8 @@ def run_evaluation(cfg: LabConfig, suite_name: str | None = None) -> dict[str, A
         return _log_failed(cfg, suite, gpu, snapshot, report)
 
     mlflow.set_tracking_uri(cfg.mlflow_tracking_uri)
+    mlflow.set_experiment(EXPERIMENTS["quality"])
+    mlflow.set_experiment(EXPERIMENTS["comparisons"])
     mlflow.set_experiment(EXPERIMENTS["performance"])
     results = []
     t0 = time.perf_counter()
