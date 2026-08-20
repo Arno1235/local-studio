@@ -1,0 +1,77 @@
+{
+  "version": "v1",
+  "suite": "smoke",
+  "kind": "custom-lab-suite",
+  "standardized_benchmark": false,
+  "items": [
+    {
+      "id": "smoke-math-001",
+      "category": "mathematics",
+      "prompt": "What is 17+8? Reply with only the number.",
+      "reference": "25",
+      "scoring": {
+        "exact_match": true,
+        "normalize": "strip-lower"
+      },
+      "max_tokens": 16
+    },
+    {
+      "id": "smoke-fact-001",
+      "category": "factual-qa",
+      "prompt": "What is the capital of France? Reply with only the city name.",
+      "reference": "Paris",
+      "scoring": {
+        "exact_match": true,
+        "normalize": "strip-lower"
+      },
+      "max_tokens": 16
+    },
+    {
+      "id": "smoke-json-001",
+      "category": "extraction",
+      "prompt": "Return JSON only: {\"ok\": true, \"n\": 3}",
+      "scoring": {
+        "json_valid": true,
+        "json_schema": {
+          "type": "object",
+          "required": [
+            "ok",
+            "n"
+          ]
+        }
+      },
+      "max_tokens": 64
+    },
+    {
+      "id": "smoke-instr-001",
+      "category": "instruction-following",
+      "prompt": "Reply with exactly the word: pong",
+      "reference": "pong",
+      "scoring": {
+        "exact_match": true,
+        "normalize": "strip-lower"
+      },
+      "max_tokens": 16
+    },
+    {
+      "id": "smoke-code-001",
+      "category": "coding",
+      "prompt": "Write a Python function named add(a, b) that returns a+b. Code only.",
+      "scoring": {
+        "regex": "def\\s+add\\s*\\("
+      },
+      "max_tokens": 80
+    },
+    {
+      "id": "smoke-concise-001",
+      "category": "concise",
+      "prompt": "How many days are in a leap year? Number only.",
+      "reference": "366",
+      "scoring": {
+        "contains": "366",
+        "normalize": "strip-lower"
+      },
+      "max_tokens": 16
+    }
+  ]
+}
