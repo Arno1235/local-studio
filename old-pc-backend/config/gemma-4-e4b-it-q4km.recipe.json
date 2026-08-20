@@ -1,0 +1,19 @@
+{
+  "id": "gemma-4-e4b-it-q4km",
+  "name": "Gemma 4 E4B IT Q4_K_M",
+  "model_path": "/home/anon/.local/share/local-studio/models/unsloth/gemma-4-E4B-it-GGUF/gemma-4-E4B-it-Q4_K_M.gguf",
+  "backend": "llamacpp",
+  "runtime": {
+    "kind": "binary",
+    "ref": "/home/anon/.local/share/local-studio/data/runtime/llamacpp/src/build/bin/llama-server"
+  },
+  "served_model_name": "gemma-4-e4b-it-q4km",
+  "max_model_len": 8192,
+  "max_num_seqs": 1,
+  "port": 8081,
+  "extra_args": {
+    "n-gpu-layers": "all",
+    "jinja": true,
+    "verbose": true
+  }
+}

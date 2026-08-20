@@ -1,276 +1,202 @@
-# Local Studio
+# Local Studio LLM lab
 
-Local Studio is a local-first workstation for running, managing, and using
-self-hosted LLM backends. One machine can launch models, watch GPU/runtime
-state, chat with OpenAI-compatible endpoints, and run agent sessions against
-local or remote controllers. Version 2.0 unifies day-to-day operation around
-Status, Workbench, Configure, and Usage instead of separate model, integration,
-and server surfaces.
+This checkout is the shared Git repository for a two-machine home lab:
 
-## Download
+- **OLD PC** (`192.168.0.69`) — Local Studio controller, llama.cpp, GGUF weights, GTX 1660 Ti
+- **NEW VM** (`192.168.0.230`) — Local Studio frontend, MLflow, evaluation scripts
 
-**[Download Local Studio for macOS (Apple Silicon)](https://github.com/sybil-solutions/local-studio/releases/latest/download/Local-Studio-arm64.dmg)**
-— signed and notarized; updates itself from GitHub releases. All versions on the
-[releases page](https://github.com/sybil-solutions/local-studio/releases), or via
-[localstudio.ai](https://localstudio.ai).
+Model inference does **not** run on the NEW VM.
 
-It is built from two modules that share one controller API:
-
-- [`controller/`](controller/README.md) — Bun/Hono backend. Owns model lifecycle
-  (launch, evict, recipes, downloads, runtime process coordination), an
-  OpenAI-compatible proxy (chat, models, tokenization, audio), system state
-  (GPU metrics, logs, usage, settings, SSE), and controller integrations.
-- [`frontend/`](frontend/README.md) — Next.js 16 + React 19 UI and the macOS
-  Electron desktop shell. Hosts the Workbench (`/agent`), consolidated
-  Configure surface, settings, usage, logs, and browser-facing API routes.
-
-## Mobile companion
-
-[KittyLitter](https://kittylitter.app) connects to Local Studio so the same
-agent sessions, streaming content, reasoning, tool calls, and tool results are
-available on iPhone, iPad, and Android. Pair from **Settings → Profile & phone →
-Connect your phone**. The QR code and copied connection JSON are private
-controller credentials; share them only with a device you trust.
-
-See the complete pairing, version, and security guide at
-[localstudio.ai/mobile](https://localstudio.ai/mobile). Mobile pairing requires
-Local Studio 2.9.0 or newer and KittyLitter 1.6.0 or newer.
-
-## What is a controller?
-
-A controller is the backend process the UI talks to — the Bun/Hono
-server in `controller/`. You can run one locally or point the frontend at a
-remote controller on a GPU host. The controller owns model lifecycle, the
-OpenAI-compatible proxy, system state, and SSE event streams.
+Repository: `git@github.com:Arno1235/local-studio.git`
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    User["User"] --> Desktop["Electron desktop app"]
-    User --> Web["Next.js web UI"]
-    Desktop --> Frontend["Frontend server / API routes"]
-    Web --> Frontend
-    Frontend --> Controller["Controller API (Bun + Hono)"]
-
-    Controller --> Runtime["Inference runtime process"]
-    Runtime --> Backends["vLLM / SGLang / llama.cpp / MLX recipes"]
-    Controller --> Data["Local data directory"]
-    Controller --> Events["SSE status and runtime events"]
-    Frontend --> Agent["Pi coding agent runtime"]
+```
+                    NEW VM 192.168.0.230
+       ┌────────────────────────────────────┐
+       │ Docker: local-studio-frontend :4783│
+       │ Docker: mlflow :5000               │
+       │ Host: evaluation/ Python CLI       │
+       └─────────────────┬──────────────────┘
+                         │ LAN HTTP + API key
+                         ▼
+                    OLD PC 192.168.0.69
+       ┌────────────────────────────────────┐
+       │ Local Studio controller :8080      │
+       │     llama.cpp llama-server :8081   │
+       │     NVIDIA GeForce GTX 1660 Ti 6GB │
+       └────────────────────────────────────┘
 ```
 
 ```mermaid
 flowchart TB
-    subgraph Frontend["frontend/"]
-        AgentPage["/agent"]
-        Configure["/configure"]
-        Settings["/settings"]
-        Usage["/usage"]
-        ProxyRoutes["/api/* proxy and agent routes"]
-        DesktopMain["desktop/ Electron shell"]
-    end
+  user[Browser on the LAN]
+  fe[Local Studio frontend container]
+  ml[MLflow container]
+  ev[evaluation CLI on the NEW VM]
+  ctl[Local Studio controller]
+  llama[llama.cpp]
+  gpu[GTX 1660 Ti]
 
-    subgraph Controller["controller/"]
-        HttpApp["src/http/app.ts"]
-        Engines["src/modules/engines"]
-        Models["src/modules/models"]
-        Proxy["src/modules/proxy"]
-        Studio["src/modules/studio"]
-        System["src/modules/system"]
-        Audio["src/modules/audio"]
-        Stores["src/stores"]
-    end
-
-    ProxyRoutes --> HttpApp
-    HttpApp --> Engines
-    HttpApp --> Models
-    HttpApp --> Proxy
-    HttpApp --> Studio
-    HttpApp --> System
-    HttpApp --> Audio
-    System --> Stores
+  user --> fe
+  user --> ml
+  ev --> ml
+  ev --> ctl
+  fe --> ctl
+  ctl --> llama
+  llama --> gpu
 ```
 
-## Quick start
+Only two primary Docker application containers run on the NEW VM: `local-studio-frontend` and `mlflow`. Postgres, Redis, MinIO, and Kubernetes are not part of this lab. MLflow uses SQLite plus a bind-mounted artifact directory.
 
-Prerequisites: Bun 1.3.14+, Node.js 22.19+, npm 10+, Python 3.10+, and Git.
-`uv` is strongly recommended; engine installs fall back to pip. vLLM/SGLang
-serving on Linux needs NVIDIA driver + CUDA; Apple Silicon uses the MLX backend.
+## 1. OLD PC setup
 
-Validate the toolchain, then install every locked workspace dependency from the
-repository root:
+See `old-pc-backend/README.md`. Short version:
+
+- Controller listens on `192.168.0.69:8080` with `LOCAL_STUDIO_API_KEY`
+- llama.cpp listens on `127.0.0.1:8081` and is not published
+- Recipe `gemma-4-e4b-it-q4km` uses `n-gpu-layers=all`
+- Frontend units stay disabled on that host
+- GGUF files stay on that disk
+
+## 2. NEW VM setup
 
 ```bash
-npm run doctor
-npm run setup
+cp .env.example .env
+# set OLD_PC_LOCAL_STUDIO_API_KEY
+bash new-vm/scripts/up.sh
+bash new-vm/scripts/health.sh
 ```
 
-Start the controller (listens on `127.0.0.1:8080`, data dir + SQLite created
-automatically, model weights in `LOCAL_STUDIO_MODELS_DIR`, default `/models`):
+`new-vm/scripts/` is used instead of `scripts/` because repository automation allows only the existing installer hooks under `scripts/`.
+
+## 3. Docker services
+
+| Service | Image build | Port | Persistence |
+| --- | --- | --- | --- |
+| `local-studio-frontend` | `new-vm/docker/frontend/Dockerfile` (Node 22.19.0) | 4783 | `data/frontend` |
+| `mlflow` | `new-vm/docker/mlflow/Dockerfile` (MLflow 3.15.1) | 5000 | `data/mlflow` |
 
 ```bash
-npm run dev:controller
+bash new-vm/scripts/up.sh
+bash new-vm/scripts/down.sh
+bash new-vm/scripts/status.sh
+bash new-vm/scripts/logs.sh
+bash new-vm/scripts/health.sh
 ```
 
-Start the frontend in a second terminal, then open
-<http://localhost:3000/setup>:
+Update: `bash new-vm/scripts/up.sh --build` after `git pull`.
+
+## 4. Remote controller configuration
+
+The frontend container gets:
+
+- `BACKEND_URL=$OLD_PC_LOCAL_STUDIO_URL` (must be the OLD PC, never localhost)
+- `API_KEY` / `LOCAL_STUDIO_API_KEY`
+- `ALLOWED_LAN_HOSTS=true` so `http://192.168.0.230:4783` works over plain HTTP
+
+The browser talks to the frontend; the frontend proxies to the controller. Do not point the UI at a second local controller.
+
+## 5. MLflow configuration
+
+- Tracking URI: `http://127.0.0.1:5000` on the VM, `http://192.168.0.230:5000` on the LAN
+- Backend store: `sqlite:////mlflow/mlflow.db`
+- Artifacts: `/mlflow/artifacts` bind-mounted to `data/mlflow`
+- Experiments created on demand: `local-llm-performance`, `local-llm-quality`, `local-llm-comparisons`
+
+## 6. Cloud judge configuration
+
+**Off.** Default semantic judge is `cursor-manual`.
+
+Cursor subscription does not provide general-purpose API credits for MLflow judges. A separate provider API key/account is required and may incur API charges. This lab does not ship `OPENAI_API_KEY` / `ANTHROPIC_API_KEY` / `GEMINI_API_KEY` variables. Setting `evaluation.semantic_judge` to a cloud provider fails closed.
+
+## 7. Secrets
+
+Live in gitignored `.env`. Use `.env.example`. Never commit API keys, `.env`, GGUF files, or MLflow SQLite databases.
+
+## 8. First evaluation
 
 ```bash
-npm run dev
+bash new-vm/scripts/health.sh
+bash new-vm/scripts/run-evaluation.sh run --suite smoke
+bash new-vm/scripts/run-evaluation.sh run --suite standard
 ```
 
-`npm run setup` installs the controller, shared contracts, agent runtime, and
-frontend from their lockfiles. The setup wizard walks through choosing a models
-directory, installing an engine, downloading a model, launching it, and
-benchmarking. Engine installs (vLLM/SGLang/MLX) land below the data directory at
-`runtime/venvs/<backend>-latest`.
+Target model: **Gemma 4 E4B IT Q4_K_M** (`gemma-4-e4b-it-q4km`) already loaded on the OLD PC. The NEW VM does not download weights.
 
-## Agent runtime
+The run is **FAILED** (not a baseline) if the model cannot be shown to reside on the GTX 1660 Ti without CPU-offloaded layers. Context may be lowered to keep full GPU residency; 8192 is the configured starting point.
 
-The agent surface lives at `/agent` in the frontend. It uses
-`@earendil-works/pi-coding-agent` through the frontend runtime rather than
-shelling out to a separate agent process for normal turns. Agent skills and
-extensions are discovered through Pi and surfaced in the session UI. Pi remains
-the source of truth for authentication, settings, resources, tools, and native
-JSONL sessions. The runtime respects `PI_CODING_AGENT_DIR`,
-`PI_CODING_AGENT_SESSION_DIR`, and Pi's `sessionDir` setting in the same
-precedence order as the CLI. Existing Local Studio session storage remains a
-read-compatible legacy source, while new sessions use Pi's resolved directory.
-Workbench sends only the active controller to Pi and shows that controller's
-advertised models by default. The model picker has an explicit Other models
-switch for models from the user's Pi catalog and providers connected in
-Configure. Those opt-in models use Pi's native provider routing without adding
-saved inactive controllers to the session.
+## 9. Later evaluations
 
-New Workbench chats start with Pi's `read`, `grep`, `find`, and `ls` tools. Full
-access enables every tool registered in that Pi session, including extension
-tools. Read only is a model-tool allowlist, not an operating-system sandbox,
-and loaded extensions may still have their own behavior. Pi runs with the full
-permissions of the host user. Tailscale limits who can reach the dashboard; it
-does not sandbox Pi.
+Same command, optionally `--suite extended` (warns: more samples, still no cloud judge) or another `--config`.
 
-## Runtime backends
+## 10. Benchmark interpretation
 
-Recipes launch through the controller runtime layer. Wired backend families:
+| Label | Meaning |
+| --- | --- |
+| Hardware benchmark | GPU name, VRAM, offload, utilization |
+| Latency benchmark | TTFT, total latency |
+| Generation benchmark | tok/s, token counts |
+| Deterministic quality | exact/regex/JSON checks |
+| Semantic LLM-judge | Cursor-manual or human import only |
+| Standardized benchmarks | **Not implemented** — do not treat v1 as MMLU/HumanEval |
 
-- `vllm` — vLLM server recipes through configured/discovered/system/Docker/bundled targets.
-- `sglang` — SGLang `launch-server` recipes through configured or discovered Python targets.
-- `llamacpp` — llama.cpp `llama-server` recipes for GGUF models.
-- `mlx` — MLX `mlx_lm.server` recipes for Apple Silicon.
+## 11. Adding a new model
 
-Runtime target discovery, models, integrations, and server controls are
-surfaced in Configure; selections persist in the controller data directory.
+1. Download and recipe on the OLD PC through Local Studio (or the controller API)
+2. Keep weights on the OLD PC
+3. Copy `evaluation/configs/gemma-4-e4b-it-q4km.yaml`, change `model.name` / quantization
+4. Run evaluation
 
-## Production
-
-Build the frontend, then serve the controller and standalone frontend in separate
-terminals:
+## 12. Comparing models
 
 ```bash
-npm run build
-npm run start:controller
-npm run start
+bash new-vm/scripts/run-evaluation.sh compare --run-a RUN_A --run-b RUN_B
 ```
 
-`npm run start` launches the standalone server through `scripts/project.mjs`.
-Never use plain `next start` — it breaks SSE streaming. The controller runs the
-same way in production as in development: `bun src/main.ts`.
+Use the same `datasets/v1` suite. Inspect side-by-side in MLflow (`local-llm-comparisons` plus the two source runs).
 
-The production frontend binds only to `127.0.0.1` and defaults to port `4783`.
-`PORT` may be set to an integer from 1024 through 65535. Workspace paths are
-canonicalized and must be under `WORKSPACE_ROOTS`, a platform-path-delimited
-list that defaults to the current user's home directory. Add mounted locations
-explicitly, for example `WORKSPACE_ROOTS="$HOME:/Volumes/Projects"` on macOS.
+## 13. Troubleshooting
 
-For private mobile access, first configure the exact Serve hostname:
+- Frontend `421 Host is not allowed` — `ALLOWED_LAN_HOSTS=true` and rebuild/restart frontend
+- Frontend cannot see models — `.env` `OLD_PC_LOCAL_STUDIO_URL` / API key; `bash new-vm/scripts/health.sh`
+- MLflow empty — evaluation CLI uses `MLFLOW_TRACKING_URI=http://127.0.0.1:5000`
+- Slow or CPU-like tok/s — treat GPU-fit as failed; do not publish as the 1660 Ti baseline
+- Old unrelated containers — they were stopped with `restart=no` on this VM
+
+## 14. GPU-offload verification
+
+The evaluator reads `/gpus`, `/status`, `/recipes`, `/compat`, `/v1/metrics/vllm`, and controller logs for `offloaded N/N layers to GPU`. It also requires VRAM use above a floor and generation tok/s above a GPU floor. Layer counts from llama.cpp logs are used when the controller exposes them; otherwise residency is inferred from VRAM + `n-gpu-layers=all` + CUDA and **not** labeled verified.
+
+## 15. Backups
+
+Copy `data/mlflow/` (SQLite + artifacts) and `data/frontend/`. Model weights are backed up on the OLD PC, not here.
+
+## 16. Updating Local Studio
+
+`git pull` on a feature branch, `bash new-vm/scripts/up.sh --build`. Do not run a second controller on the NEW VM.
+
+## 17. Updating MLflow
+
+Pin in `new-vm/docker/mlflow/Dockerfile`, rebuild the `mlflow` service. Keep the bind mount.
+
+## 18. Git workflow
+
+Branch from the current default (`main` on this fork), one agent per branch, conventional commits, PR; do not push to `main`/`dev` directly. `scripts/` layout and executable bits are gated by `npm run check`.
+
+## 19. Security
+
+Trusted LAN/VPN only. Publish 4783/5000 on the VM; do not port-forward them on the router. Controller stays on the OLD PC with an API key. Example UFW on the NEW VM:
 
 ```bash
-cd frontend
-ALLOWED_TAILSCALE_HOSTS=studio.example.ts.net npm start
-tailscale serve --bg http://127.0.0.1:4783
-tailscale serve status
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw allow 22/tcp
+sudo ufw allow from 192.168.0.0/24 to any port 4783 proto tcp
+sudo ufw allow from 192.168.0.0/24 to any port 5000 proto tcp
+sudo ufw enable
 ```
 
-Serve supplies a private HTTPS tailnet URL. Both devices must be in the intended
-tailnet, and ACLs or grants should restrict the URL to its owner. Do not use
-Tailscale Funnel. `tailscale serve --bg` persists the proxy configuration across
-Tailscale restarts and reboots; it does not start Local Studio. Optionally set
-`ALLOWED_TAILSCALE_USERS` to a comma-separated login allowlist. The
-`Tailscale-User-Login` header is trusted only because the backend remains bound
-to loopback behind Serve.
+## Application source
 
-Manual availability requires `npm start` to remain active. An OS-native user
-service can start the compiled app after login and restart it after a crash, but
-it is intentionally not installed automatically. The host must still be on,
-awake, online, and connected to Tailscale.
-
-## Remote / LAN deployment
-
-The controller binds `127.0.0.1` by default. Binding a non-loopback host (e.g.
-`LOCAL_STUDIO_HOST=0.0.0.0`) requires `LOCAL_STUDIO_API_KEY` — startup throws
-without it. On a trusted LAN you may instead set
-`LOCAL_STUDIO_ALLOW_UNAUTHENTICATED=true` to opt out of authentication.
-
-Point the frontend at a remote controller with `BACKEND_URL` or
-`NEXT_PUBLIC_API_URL` (default `http://localhost:8080`).
-
-Deploy with your normal SSH or infrastructure workflow. The repository does not
-maintain a second deployment wrapper alongside the controller installer.
-
-The controller installer registers a persistent user service automatically
-(`launchd` on macOS and `systemd --user` on Linux), so installed controllers
-return after login without a repository daemon wrapper.
-
-## Validation
-
-```bash
-npm run check
-```
-
-The configured pre-push hook (`.githooks/pre-push`) checks conventional commits
-and runs the frontend quality gate before pushing. The hook filenames are
-symlinks to `scripts/project.mjs`; they do not contain separate automation logic.
-
-## Releases
-
-Every successful `main` CI run builds an unsigned macOS app and keeps the
-exact-SHA package as a GitHub Actions artifact. Conventional commits
-then trigger `release.yml`. Semantic Release chooses the next version (`feat` →
-minor, breaking → major, all other allowed commit types → patch).
-
-The release workflow builds the exact revision without Apple credentials,
-then passes only that unsigned app bundle to a separate signing job. The signing
-job installs the lockfile-pinned signing tooling without lifecycle scripts,
-signs, notarizes and staples the release assets, and hands them to a final
-publish job. Each stage rechecks that its revision is still `origin/main`; only
-the final stage can create the GitHub release with the DMG, updater files,
-stable website alias, checksums, and source manifest. There is no npm publish
-and tags are never created by hand.
-
-## Acknowledgements
-
-Local Studio is built with and inspired by exceptional open-source work:
-
-- [Pi](https://github.com/earendil-works/pi) — the agent runtime and native
-  session model behind Workbench.
-- [T3 Code](https://github.com/pingdotgg/t3code) — inspiration for a focused,
-  developer-first coding workbench.
-- [SGLang](https://github.com/sgl-project/sglang) — a high-performance model
-  serving backend supported by Local Studio recipes.
-- [vLLM](https://github.com/vllm-project/vllm) — a high-throughput inference
-  and serving backend supported throughout Local Studio.
-- [Convex](https://github.com/get-convex/convex-backend) — inspiration for
-  reactive, real-time application architecture.
-
-## Contributing
-
-Contributions should be small, focused, and easy to review. Start from the
-latest `dev`, one logical change per branch, no formatting-only rewrites, no
-secrets or build artifacts. Run `npm run check` before opening a PR; include a concise summary, the validation
-commands you ran, and screenshots for UI changes. See AGENTS.md for the full
-code standards an agent (or contributor) must follow.
-
-## License
-
-See [LICENSE](LICENSE).
+`controller/` and `frontend/` remain the Local Studio product. Day-to-day product docs: `controller/README.md`, `frontend/README.md`.
