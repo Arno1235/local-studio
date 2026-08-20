@@ -42,7 +42,7 @@ api() {
 put_recipe() {
   local ctx="$1"
   python3 - "$RECIPE_FILE" "$ctx" <<'PY'
-import json, sys
+import json, os, sys
 path, ctx = sys.argv[1], int(sys.argv[2])
 with open(path, encoding="utf-8") as handle:
     recipe = json.load(handle)

@@ -14,7 +14,7 @@ Environment=CUDA_HOME=/usr/local/cuda
 ExecStart=/home/anon/.bun/bin/bun /home/anon/Documents/local-studio-fork/controller/src/main.ts
 Restart=on-failure
 RestartSec=5
-KillMode=mixed
+KillMode=process
 TimeoutStopSec=20
 StandardOutput=append:/home/anon/.local/share/local-studio/controller.log
 StandardError=append:/home/anon/.local/share/local-studio/controller.log

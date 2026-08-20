@@ -117,7 +117,10 @@ Weights stay on the old PC. The first benchmark file:
 - Source: `https://huggingface.co/unsloth/gemma-4-E4B-it-GGUF`
 - Quant: Q4_K_M
 - Size: 4977171584 bytes (matches Hugging Face `X-Linked-Size`)
-- Hugging Face LFS SHA256 / ETag: `85a896a047553e842f25297ee5b031d64ff30147d9c4af17b1e4b394cd1fab87`
+- SHA256: `85a896a047553e842f25297ee5b031d64ff30147d9c4af17b1e4b394cd1fab87` (matches Hugging Face `X-Linked-ETag`)
+- llama.cpp: `0.1.2-dev` commit `07822bd`, CUDA sm_75, `llama-server --list-devices` shows the GTX 1660 Ti
+- Full GPU layer offload at context 2048 and 8192: `offloaded 43/43 layers to GPU`. Context 32768 allocated layers on GPU but the 6 GB host RAM was exhausted (systemd-oomd), so **8192 is the largest stable full-GPU context tested**.
+- `token_embd.weight` / PLE tables stay in host RAM (~2.2 GiB); that is not layer offload.
 
 To (re)download through the controller after it is healthy:
 

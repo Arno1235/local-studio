@@ -69,6 +69,8 @@ controller/test-output/
 reports/
 !evaluation/reports/
 !evaluation/reports/.gitkeep
+evaluation/reports/*
+!evaluation/reports/.gitkeep
 *.gguf
 
 # Local proofs / scratch

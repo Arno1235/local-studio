@@ -53,7 +53,7 @@ if [[ "$FAILED" -eq 0 ]]; then
 fi
 
 if [[ "$FAILED" -eq 0 ]]; then
-  if llama_info="$(curl_json "${CONTROLLER}/runtime/llamacpp" 2>/dev/null)"; then
+  if llama_info="$(curl_json "${CONTROLLER}/runtime/llamacpp" --max-time 30 2>/dev/null)"; then
     python3 - "$llama_info" <<'PY' || fail "llama.cpp runtime not actually present"
 import json, os, sys
 info = json.loads(sys.argv[1])
