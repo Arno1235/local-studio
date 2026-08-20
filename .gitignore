@@ -3,6 +3,7 @@
 .env.*
 *.local
 !.env.example
+!**/.env.example
 
 .factory
 
@@ -58,6 +59,8 @@ Thumbs.db
 *.zip
 .tmp/
 reports/
+!evaluation/reports/
+!evaluation/reports/**
 
 # Local proofs / scratch
 proof-*.png
@@ -87,4 +90,9 @@ frontend/dist-desktop/
 frontend/dist-desktop-dev/
 frontend/dist-installers/
 .vercel
-.env*
+
+# LLM lab runtime
+new-vm/.env
+evaluation/.venv/
+evaluation/output/
+*.gguf
