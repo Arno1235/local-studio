@@ -222,6 +222,10 @@ The controller installer registers a persistent user service automatically
 (`launchd` on macOS and `systemd --user` on Linux), so installed controllers
 return after login without a repository daemon wrapper.
 
+This fork also documents a two-machine lab: the old PC runs only the
+controller and llama.cpp (`old-pc-backend/`), while the new VM runs the
+frontend, MLflow, and evaluation (`new-vm/`, `architecture/`).
+
 ## Validation
 
 ```bash

@@ -67,6 +67,9 @@ frontend/e2e/**/.auth/
 frontend/e2e/**/videos/
 controller/test-output/
 reports/
+!evaluation/reports/
+!evaluation/reports/.gitkeep
+*.gguf
 
 # Local proofs / scratch
 proof-*.png
@@ -97,3 +100,5 @@ frontend/dist-desktop-dev/
 frontend/dist-installers/
 .vercel
 .env*
+!.env.example
+!new-vm/.env.example
