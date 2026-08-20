@@ -48,7 +48,7 @@ with open(path, encoding="utf-8") as handle:
     recipe = json.load(handle)
 recipe["max_model_len"] = ctx
 recipe["extra_args"] = dict(recipe.get("extra_args") or {})
-recipe["extra_args"]["n-gpu-layers"] = -1
+recipe["extra_args"]["n-gpu-layers"] = "all"
 json.dump(recipe, sys.stdout)
 PY
 }
@@ -57,7 +57,7 @@ wait_ready() {
   python3 - "$CONTROLLER" "$API_KEY" <<'PY'
 import json, sys, time, urllib.request
 base, key = sys.argv[1], sys.argv[2]
-deadline = time.time() + 180
+deadline = time.time() + 420
 headers = {"Authorization": f"Bearer {key}", "X-API-Key": key} if key else {}
 while time.time() < deadline:
     req = urllib.request.Request(base + "/wait-ready?timeout=15", headers=headers)
