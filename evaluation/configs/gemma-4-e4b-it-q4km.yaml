@@ -1,0 +1,26 @@
+model:
+  name: gemma-4-e4b-it-q4km
+  endpoint: ${OLD_PC_LOCAL_STUDIO_URL}/v1
+  backend: llamacpp
+  quantization: Q4_K_M
+  revision: ""
+
+generation:
+  temperature: 0
+  top_p: 0.95
+  max_tokens: 256
+  context_length: 8192
+  seed: 42
+
+evaluation:
+  dataset: v1
+  suite: standard
+  semantic_judge: cursor-manual
+  deterministic_metrics: true
+  timeout_s: 180
+
+hardware:
+  expected_gpu: NVIDIA GeForce GTX 1660 Ti
+  require_full_gpu_residency: true
+  min_vram_used_mb: 2000
+  min_gpu_generation_tps: 12
