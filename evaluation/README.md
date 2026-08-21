@@ -16,6 +16,8 @@ Gemma 4 E4B IT may emit a `reasoning_content` thinking channel before the visibl
 
 ## Commands
 
+Full walkthrough for comparing two models on speed, token use, and accuracy: [`mlflow-model-comparison.md`](mlflow-model-comparison.md).
+
 ```bash
 bash new-vm/scripts/run-evaluation.sh run --suite smoke
 bash new-vm/scripts/run-evaluation.sh run --suite standard

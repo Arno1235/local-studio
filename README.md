@@ -160,6 +160,8 @@ Same command, optionally `--suite extended` (warns: more samples, still no cloud
 
 ## 12. Comparing models
 
+Walkthrough (speed, token efficiency, accuracy, MLflow UI): `evaluation/mlflow-model-comparison.md`.
+
 ```bash
 bash new-vm/scripts/run-evaluation.sh compare --run-a RUN_A --run-b RUN_B
 ```
