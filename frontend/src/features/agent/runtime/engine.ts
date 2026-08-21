@@ -246,6 +246,7 @@ export function useSessionEngine(deps: UseSessionEngineDeps): SessionEngine {
 
   const loadAndReplay = useCallback(
     (piSessionId: string, sessionId: SessionId) => {
+      if (!cwd) return Promise.resolve();
       if (inFlightReplays.has(sessionId)) return Promise.resolve();
       inFlightReplays.add(sessionId);
       return Effect.runPromise(
@@ -255,12 +256,6 @@ export function useSessionEngine(deps: UseSessionEngineDeps): SessionEngine {
             session.messages.length === 0 && cachedMessages
               ? { ...session, messages: cachedMessages }
               : session;
-          if (!cwd) {
-            updateSession(sessionId, (session) =>
-              seedCached(session.status === "loading" ? { ...session, status: "idle" } : session),
-            );
-            return;
-          }
           updateSession(sessionId, (session) => ({
             ...seedCached(session),
             status: "loading",

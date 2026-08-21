@@ -301,8 +301,11 @@ function queueReplayEffects(
       }
       return;
     case "urlNavRequested":
-      if (action.sessionId && !findPaneByPiSessionId(prevState, action.sessionId)) {
-        queueLocatedReplay(action.sessionId, nextState, deps);
+      if (action.sessionId) {
+        const located = findPaneByPiSessionId(nextState, action.sessionId);
+        if (!located || located.session.messages.length === 0) {
+          queueLocatedReplay(action.sessionId, nextState, deps);
+        }
       }
       return;
     default:

@@ -171,6 +171,7 @@ const WorkspacePane = memo(function WorkspacePane({
   const sessions = view.session ? [view.session] : [];
   return (
     <ChatPane
+      key={view.session?.piSessionId ?? view.session?.id ?? view.paneId}
       paneId={view.paneId}
       modelId={view.modelId}
       modelName={view.model?.name ?? view.modelId ?? null}

@@ -51,6 +51,7 @@ export function useChatPaneDerivedState({
 export function useChatPaneRuntimeHandle({
   activeTab,
   activeTabId,
+  cwd,
   engine,
   modelId,
   isFocused,
@@ -59,6 +60,7 @@ export function useChatPaneRuntimeHandle({
 }: {
   activeTab: SessionTab | null;
   activeTabId: string;
+  cwd: string;
   engine: SessionEngine;
   modelId: string;
   isFocused: boolean;
@@ -71,10 +73,14 @@ export function useChatPaneRuntimeHandle({
     if (!isFocused || !activeTab) return;
     const { piSessionId, messages, status } = activeTab;
     if (!piSessionId || messages.length > 0 || status !== "idle") return;
-    if (replayedRef.current.has(activeTabId)) return;
-    replayedRef.current.add(activeTabId);
-    void engine.loadAndReplay(piSessionId, activeTabId);
-  }, [activeTab, activeTabId, isFocused, engine]);
+    if (!cwd) return;
+    const replayKey = `${activeTabId}:${piSessionId}`;
+    if (replayedRef.current.has(replayKey)) return;
+    replayedRef.current.add(replayKey);
+    void Promise.resolve(engine.loadAndReplay(piSessionId, activeTabId)).catch(() => {
+      replayedRef.current.delete(replayKey);
+    });
+  }, [activeTab, activeTabId, cwd, isFocused, engine]);
   const loadAndReplay = useCallback(
     (piSessionId: string) =>
       activeTabId ? engine.loadAndReplay(piSessionId, activeTabId) : Promise.resolve(),

@@ -445,6 +445,7 @@ export function ChatPane({
   const { compacting, compactSession } = useChatPaneRuntimeHandle({
     activeTab,
     activeTabId,
+    cwd,
     engine,
     modelId,
     isFocused,
