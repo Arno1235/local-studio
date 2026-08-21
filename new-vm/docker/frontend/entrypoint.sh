@@ -7,7 +7,7 @@ export LOCAL_STUDIO_DATA_DIR="$DATA_DIR"
 export PI_CODING_AGENT_DIR="${PI_CODING_AGENT_DIR:-$DATA_DIR/pi-agent}"
 export LOCAL_STUDIO_AGENT_RUNTIME_URL="${LOCAL_STUDIO_AGENT_RUNTIME_URL:-http://127.0.0.1:${AGENT_PORT}}"
 export LOCAL_STUDIO_FRONTEND_BASE="${LOCAL_STUDIO_FRONTEND_BASE:-http://127.0.0.1:${PORT:-4783}}"
-mkdir -p "$DATA_DIR" "$PI_CODING_AGENT_DIR"
+mkdir -p "$DATA_DIR" "$PI_CODING_AGENT_DIR" "${HOME:-/root}/.local-studio"
 
 node -e '
 const fs = require("fs");
