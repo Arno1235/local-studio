@@ -32,6 +32,11 @@ elif [ -d frontend/.next/static ]; then
   cp -a frontend/.next/static /out/frontend/.next/static
   cp -a frontend/.next/static /out/.next/static
 fi
-mkdir -p /out/frontend/public /out/public
+mkdir -p /out/frontend/public /out/public /out/agent-runtime
 cp -a frontend/public/. /out/frontend/public/
 cp -a frontend/public/. /out/public/
+if [ ! -f services/agent-runtime/dist/standalone.mjs ]; then
+  echo "agent-runtime standalone.mjs was not found" >&2
+  exit 1
+fi
+cp -a services/agent-runtime/dist/. /out/agent-runtime/

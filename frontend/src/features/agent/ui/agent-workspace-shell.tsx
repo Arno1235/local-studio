@@ -263,6 +263,13 @@ function ComputerPanelFallback() {
 function humanizeWorkspaceNotice(message: string): string {
   const normalized = message.toLowerCase();
   if (
+    normalized.includes("agent runtime unreachable") ||
+    normalized.includes("127.0.0.1:8081") ||
+    normalized.includes("localhost:8081")
+  ) {
+    return "New Task uses a local agent runtime, not llama.cpp. Keep Settings → General on the OLD PC controller (port 8080). Do not use 127.0.0.1:8081 — that port is llama.cpp on the GPU PC and is not reachable from this VM.";
+  }
+  if (
     normalized.includes("fetch failed") ||
     normalized.includes("failed to fetch") ||
     normalized.includes("network") ||

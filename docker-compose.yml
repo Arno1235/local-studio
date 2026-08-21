@@ -19,6 +19,9 @@ services:
       ALLOWED_LAN_HOSTS: "true"
       ALLOWED_TAILSCALE_HOSTS: ${NEW_VM_PUBLIC_HOST:-192.168.0.230}
       LOCAL_STUDIO_DATA_DIR: /var/lib/local-studio
+      LOCAL_STUDIO_AGENT_RUNTIME_PORT: "4784"
+      LOCAL_STUDIO_AGENT_RUNTIME_URL: http://127.0.0.1:4784
+      LOCAL_STUDIO_FRONTEND_BASE: http://127.0.0.1:4783
     ports:
       - "${FRONTEND_PORT:-4783}:4783"
     volumes:

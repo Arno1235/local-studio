@@ -97,6 +97,15 @@ The frontend container gets:
 
 The browser talks to the frontend; the frontend proxies to the controller. Do not point the UI at a second local controller.
 
+Do **not** put `127.0.0.1:8081` in Settings. That is llama.cpp on the OLD PC loopback. From this VM the GPU is reached only through `http://192.168.0.69:8080`.
+
+| Surface | What it talks to | Model / GPU |
+| --- | --- | --- |
+| Status, recipes, Chat | Frontend `/api/proxy` → OLD PC controller `:8080` | Yes, Gemma on the 1660 Ti |
+| New Task (agent / terminal) | Frontend → **agent runtime inside this container** (`127.0.0.1:4784`) → then the same controller `:8080` for tokens | Yes, after the agent runtime is up |
+
+If New Task says “no model” or the terminal shows `127.0.0.1`, Settings can still be connected: Chat/Status use the controller, while New Task needs the in-container agent runtime. Restart with `bash new-vm/scripts/up.sh --build` after this image includes that runtime.
+
 ## 5. MLflow configuration
 
 - Tracking URI: `http://127.0.0.1:5000` on the VM, `http://192.168.0.230:5000` on the LAN

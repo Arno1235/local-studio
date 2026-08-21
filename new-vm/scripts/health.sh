@@ -25,6 +25,12 @@ else
   fail "Local Studio frontend $FRONTEND"
 fi
 
+if curl -fsS --max-time 8 "$FRONTEND/api/agent/runtime/status" >/dev/null; then
+  ok "New Task agent runtime via $FRONTEND/api/agent/runtime/status"
+else
+  fail "New Task agent runtime via $FRONTEND/api/agent/runtime/status"
+fi
+
 if curl -fsS --max-time 8 "$MLFLOW/health" >/dev/null || curl -fsS --max-time 8 "$MLFLOW/" >/dev/null; then
   ok "MLflow $MLFLOW"
 else

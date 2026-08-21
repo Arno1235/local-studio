@@ -17,7 +17,7 @@ RUN chmod 755 /tmp/build-frontend.sh && /tmp/build-frontend.sh
 
 FROM node:22.19.0-bookworm-slim
 RUN apt-get update \
- && apt-get install -y --no-install-recommends ca-certificates curl \
+ && apt-get install -y --no-install-recommends ca-certificates curl git \
  && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY --from=build /out ./
