@@ -7,4 +7,5 @@ exec mlflow server \
   --backend-store-uri sqlite:////mlflow/mlflow.db \
   --serve-artifacts \
   --artifacts-destination /mlflow/artifacts \
-  --allowed-hosts '*'
+  --allowed-hosts '*' \
+  --cors-allowed-origins '*'

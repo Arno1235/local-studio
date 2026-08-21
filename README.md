@@ -111,6 +111,7 @@ If New Task says “no model” or the terminal shows `127.0.0.1`, Settings can 
 - Tracking URI: `http://127.0.0.1:5000` on the VM, `http://192.168.0.230:5000` on the LAN
 - Backend store: `sqlite:////mlflow/mlflow.db`
 - Artifacts: `/mlflow/artifacts` bind-mounted to `data/mlflow`
+- LAN UI: `--allowed-hosts '*'` and `--cors-allowed-origins '*'` so experiment charts can call `/ajax-api` from `http://192.168.0.230:5000`
 - Experiments created on demand: `local-llm-performance`, `local-llm-quality`, `local-llm-comparisons`
 
 ## 6. Cloud judge configuration
