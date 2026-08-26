@@ -14,7 +14,7 @@ if [[ ! -x evaluation/.venv/bin/python ]]; then
     curl -fsSL https://bootstrap.pypa.io/get-pip.py -o /tmp/get-pip.py
     evaluation/.venv/bin/python /tmp/get-pip.py
   fi
-  evaluation/.venv/bin/pip install -e evaluation
 fi
+evaluation/.venv/bin/pip install -q -e evaluation
 export MLFLOW_TRACKING_URI="${MLFLOW_TRACKING_URI:-http://127.0.0.1:5000}"
 exec evaluation/.venv/bin/python -m llm_lab_eval "$@"

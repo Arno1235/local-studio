@@ -1,4 +1,10 @@
-Human-readable and JSON reports are written to `evaluation/output/` (gitignored) and uploaded as MLflow artifacts.
+Human-readable and JSON reports from the in-repo lab CLI are written to `evaluation/output/` (gitignored) and uploaded as MLflow artifacts.
+
+Unattended GPU benches (smoke + llama-bench via SSH + EvalPlus HumanEval+) write a single comparable markdown file here:
+
+- Prompt to paste into Cursor on the NEW VM: [`../prompts/run-gpu-bench.md`](../prompts/run-gpu-bench.md)
+- Report schema: [`TEMPLATE-gpu-bench.md`](TEMPLATE-gpu-bench.md)
+- Filled reports: `gpu-bench-<served_model_name>.md`
 
 Import Cursor-manual or human JSON with:
 

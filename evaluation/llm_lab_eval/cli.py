@@ -4,8 +4,10 @@ import argparse
 import json
 
 from llm_lab_eval.config import load_config
+from llm_lab_eval.llama_bench import run_llama_bench
 from llm_lab_eval.review import generate_cursor_review, import_review
 from llm_lab_eval.runner import EXPERIMENTS, run_evaluation
+from llm_lab_eval.served_bench import run_served_bench
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -34,6 +36,19 @@ def main(argv: list[str] | None = None) -> int:
     cmp_p.add_argument("--run-a", required=True)
     cmp_p.add_argument("--run-b", required=True)
 
+    bench_p = sub.add_parser("served-bench", help="speed bench via the served OpenAI endpoint")
+    bench_p.add_argument("--config", default=None)
+    bench_p.add_argument("--model", default=None)
+    bench_p.add_argument("--endpoint", default=None)
+    bench_p.add_argument("--repetitions", type=int, default=3)
+
+    llama_p = sub.add_parser("llama-bench", help="native llama-bench on the OLD PC over SSH")
+    llama_p.add_argument("--config", default=None)
+    llama_p.add_argument("--model", default=None)
+    llama_p.add_argument("--endpoint", default=None)
+    llama_p.add_argument("--ssh-password-file", default=None)
+    llama_p.add_argument("--no-reload", action="store_true")
+
     args = parser.parse_args(argv)
     if args.cmd == "run":
         cfg = load_config(args.config)
@@ -57,6 +72,32 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     if args.cmd == "compare":
         return compare_runs(args.run_a, args.run_b)
+    if args.cmd == "served-bench":
+        cfg = load_config(args.config)
+        if args.model:
+            cfg.model.name = args.model
+        if args.endpoint:
+            cfg.model.endpoint = args.endpoint.rstrip("/")
+        payload = run_served_bench(cfg, max(1, args.repetitions))
+        print(json.dumps(payload, indent=2, default=str))
+        if payload.get("status") != "ok":
+            return 2
+        return 0
+    if args.cmd == "llama-bench":
+        cfg = load_config(args.config)
+        if args.model:
+            cfg.model.name = args.model
+        if args.endpoint:
+            cfg.model.endpoint = args.endpoint.rstrip("/")
+        payload = run_llama_bench(
+            cfg,
+            password_file=args.ssh_password_file,
+            reload=not args.no_reload,
+        )
+        print(json.dumps({k: v for k, v in payload.items() if k != "password"}, indent=2, default=str))
+        if payload.get("status") != "ok":
+            return 2
+        return 0
     return 1
 
 

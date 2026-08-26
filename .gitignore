@@ -94,5 +94,7 @@ frontend/dist-installers/
 # LLM lab runtime
 new-vm/.env
 evaluation/.venv/
+evaluation/.evalplus-venv/
 evaluation/output/
+evalplus_results/
 *.gguf

@@ -136,6 +136,8 @@ Target model: **Gemma 4 E4B IT Q4_K_M** (`gemma-4-e4b-it-q4km`) already loaded o
 
 The run is **FAILED** (not a baseline) if the model cannot be shown to reside on the GTX 1660 Ti without CPU-offloaded layers. Context may be lowered to keep full GPU residency; 8192 is the configured starting point.
 
+Unattended smoke + `llama-bench` (SSH to the OLD PC) + EvalPlus HumanEval+ (Cursor on this VM): put `OLD_PC_SSH_USER` / `OLD_PC_SSH_PASSWORD` in `.env`, then paste `evaluation/prompts/run-gpu-bench.md`. Results go to `evaluation/reports/gpu-bench-<served-model-name>.md`.
+
 ## 9. Later evaluations
 
 Same command, optionally `--suite extended` (warns: more samples, still no cloud judge) or another `--config`.

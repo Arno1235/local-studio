@@ -18,6 +18,16 @@ class ControllerClient:
         )
         return status, payload
 
+    def post(self, path: str, body: dict[str, Any] | None = None, timeout: float = 30.0) -> tuple[int, Any]:
+        status, payload, _ = request_json(
+            f"{self.base_url}{path}",
+            method="POST",
+            api_key=self.api_key,
+            body=body,
+            timeout=timeout,
+        )
+        return status, payload
+
     def snapshot(self) -> dict[str, Any]:
         out: dict[str, Any] = {}
         for path, key in [
