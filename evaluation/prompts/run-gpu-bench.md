@@ -2,6 +2,8 @@
 
 Paste **this entire file** into Cursor on the **NEW VM** (`192.168.0.230`), after filling the Model card. Cursor must run the three automated benches, write one markdown report, and stop. Do not change Local Studio product code.
 
+The OLD PC has **no passwordless SSH**. Do not SSH, do not use `sshpass`, and do not try to run `llama-bench` on the GPU host. Speed is measured from this VM against the already-serving OpenAI endpoint (`served-bench`).
+
 Comparable public numbers (optional context, do not fetch unless needed):
 
 - EvalPlus HumanEval+ leaderboard: https://evalplus.github.io/leaderboard.html
@@ -35,7 +37,7 @@ min_vram_used_mb: 2000
 min_gpu_generation_tps: 12
 ```
 
-If this model is already downloaded and loaded (the default lab state), skip download/launch. Still **evict before llama-bench**, then load again before smoke and EvalPlus.
+If this model is already downloaded and loaded (the default lab state), skip download/launch. Do **not** evict it for a speed bench.
 
 ---
 
@@ -45,9 +47,9 @@ You are Cursor on the NEW VM checkout of `local-studio`. Inference runs only on 
 
 Run, in order:
 
-1. Prepare the model on the OLD PC (download + recipe + GPU-free llama-bench + load).
-2. Smoke the pipe (`evaluation` smoke suite).
-3. `llama-bench` on the OLD PC (already done in step 1 if you followed the order below).
+1. Prepare the model on the OLD PC (download + recipe + load if needed).
+2. Served-path speed bench (`served-bench`: pp512, pp2048, tg128).
+3. Smoke the pipe (`evaluation` smoke suite).
 4. EvalPlus **HumanEval+** (dataset `humaneval`, greedy, report both Base and Base+Extra).
 5. Write **one** markdown report at:
 
@@ -65,8 +67,9 @@ Then stop. Do not start MBPP, Aider, SWE-bench, Cursor-manual review, or cloud j
 - Never print, commit, or paste API keys, `.env`, HF tokens, or GGUF bytes.
 - One model on the GPU. Do not use Local Studio Chat or New Task during the run.
 - `max_num_seqs` is 1: no parallel inference requests.
+- Do not SSH to the OLD PC. There is no passwordless SSH. Speed comes from `served-bench` on this VM.
 - Do not abort EvalPlus because it is slow. HumanEval is 164 tasks and can take several hours on the 1660 Ti. Resume is on by default. If the session dies, re-paste this prompt; codegen continues from the jsonl cache.
-- If a stage is impossible (no SSH, no llama-bench binary, download gated), mark it `blocked` with the reason and continue the other stages.
+- If a stage is impossible (download gated, model will not serve), mark it `blocked` or `failed` with the reason and continue any stage that can still run.
 - Smoke GPU-fit failure: record it, still attempt EvalPlus unless the model is not serving.
 
 ---
@@ -86,18 +89,6 @@ auth() { curl -fsS -H "Authorization: Bearer $KEY" -H "X-API-Key: $KEY" "$@"; }
 ```
 
 Abort if `KEY` is empty. Never echo `KEY`.
-
-Optional SSH (for llama-bench only):
-
-```bash
-export SSH_HOST="${OLD_PC_SSH_HOST:-${OLD_PC_HOST:-192.168.0.69}}"
-export SSH_USER="${OLD_PC_SSH_USER:-anon}"
-export SSH_OPTS="-o BatchMode=yes -o ConnectTimeout=8"
-# OLD_PC_SSH_IDENTITY if set: add -i
-ssh $SSH_OPTS "${SSH_USER}@${SSH_HOST}" true
-```
-
-If SSH fails, try `~/.ssh/config` hosts `old-pc` / `oldpc`. If all fail, llama-bench is `blocked`; do not invent another way to run a binary on the OLD PC.
 
 ---
 
@@ -137,7 +128,7 @@ After completion, resolve the full GGUF path (`target_dir` + `gguf_filename`).
 
 ---
 
-## Stage 2 — recipe
+## Stage 2 — recipe and load
 
 If `GET $CTL/recipes/<recipe_id>` exists, reuse it. Otherwise `POST $CTL/recipes` with:
 
@@ -165,46 +156,7 @@ If `GET $CTL/recipes/<recipe_id>` exists, reuse it. Otherwise `POST $CTL/recipes
 
 If `GET $CTL/runtime/llamacpp` or `/studio/diagnostics` returns a different `llama-server` path, use that as `runtime.ref`. Keep `n-gpu-layers: all`, `max_num_seqs: 1`, context 8192 unless the model cannot fit (then lower context, say so in the report).
 
-Smoke config: reuse `evaluation/configs/gemma-4-e4b-it-q4km.yaml` when the served name matches. Otherwise copy it to `evaluation/configs/<recipe_id>.yaml` and set `model.name`, `model.quantization`, `generation.context_length`.
-
----
-
-## Stage 3 — llama-bench (GPU must be free)
-
-`llama-bench` loads the GGUF itself. The 6 GB card cannot hold llama-server and llama-bench at once.
-
-1. `POST $CTL/evict`
-2. Poll `GET $CTL/gpus` until VRAM used is near idle (display overhead only), up to ~60s.
-3. Over SSH, locate the bench binary next to `llama-server`:
-
-```text
-<dir-of-llama-server>/llama-bench
-```
-
-Managed llama.cpp in this lab is often built with `--target llama-server` only. If `llama-bench` is missing, build just that target on the OLD PC:
-
-```bash
-cmake --build /home/anon/.local/share/local-studio/data/runtime/llamacpp/src/build \
-  --target llama-bench -j"$(nproc)"
-```
-
-Do not change Local Studio source to do this. If the build fails, mark llama-bench `blocked`.
-
-4. Run (3 repetitions is enough):
-
-```bash
-llama-bench \
-  -m "<absolute GGUF path>" \
-  -ngl 99 \
-  -p 512,2048 \
-  -n 128 \
-  -r 3 \
-  -o md
-```
-
-Also capture `-o json` if the binary supports it. Save the full table into the report. Record pp512, pp2048, tg128 tok/s.
-
-5. After bench, load the recipe:
+If `/v1/models` does not already list `<served_model_name>`:
 
 ```bash
 auth -X POST "$CTL/launch/<recipe_id>"
@@ -219,7 +171,35 @@ auth -H "Content-Type: application/json" \
   "$CTL/v1/chat/completions"
 ```
 
-Gemma-style models may think in `reasoning_content` before `content`. Score visible `content`. If `content` is empty, raise `max_tokens` for this probe only.
+Gemma-style models may think in `reasoning_content` before `content`. If `content` is empty, raise `max_tokens` for this probe only.
+
+Smoke config: reuse `evaluation/configs/gemma-4-e4b-it-q4km.yaml` when the served name matches. Otherwise copy it to `evaluation/configs/<recipe_id>.yaml` and set `model.name`, `model.quantization`, `generation.context_length`.
+
+---
+
+## Stage 3 — served-path speed bench (replaces llama-bench)
+
+This is the speed stage. It runs **on the NEW VM** against `$CTL/v1/chat/completions`. The model stays loaded. Do not evict.
+
+```bash
+bash new-vm/scripts/run-evaluation.sh served-bench \
+  --config evaluation/configs/<recipe_id>.yaml \
+  --repetitions 3
+```
+
+It warms up, then measures:
+
+| test | what it does |
+| --- | --- |
+| pp512 | ~512 prompt tokens, 1 generated token → prefill tok/s |
+| pp2048 | ~2048 prompt tokens, 1 generated token → prefill tok/s |
+| tg128 | short prompt, 128 generated tokens → decode tok/s |
+
+Prefer llama.cpp `prompt_per_second` / `predicted_per_second` from stream timings; fall back to tokens / seconds.
+
+Copy `evaluation/output/served-bench-<served_model_name>.md` (and the JSON) into the report. Record mean and stdev.
+
+Label it **served-path**, not native `llama-bench`. HTTP + chat template + this recipe are included. Numbers are comparable across models in **this lab**, not 1:1 with random internet `llama-bench -ngl 99` posts.
 
 ---
 
@@ -310,7 +290,7 @@ Fill every field. Use `n/a` or `blocked` with a reason; never leave a section ou
 
 At the top, set:
 
-- `status_overall`: `ok` only if smoke did not fail GPU-fit **and** HumanEval+ produced both pass@1 numbers. llama-bench `blocked` makes overall `partial`, not `ok`.
+- `status_overall`: `ok` only if smoke did not fail GPU-fit, served-bench produced pp512/pp2048/tg128, **and** HumanEval+ produced both pass@1 numbers.
 - `run_utc`: ISO-8601 UTC
 - git SHA of this checkout
 
@@ -323,10 +303,9 @@ Commit **only** the report file (and a new `evaluation/configs/<recipe_id>.yaml`
 1. Health + inspect recipes/models/GPU
 2. Download GGUF on OLD PC if missing
 3. Create recipe if missing
-4. Evict
-5. llama-bench (SSH)
-6. Launch recipe, wait-ready, pong probe
-7. Smoke suite
-8. EvalPlus HumanEval+
-9. One markdown report
-10. Commit report (and new yaml if any)
+4. Launch recipe if not already serving; wait-ready; pong probe
+5. Served-path speed bench
+6. Smoke suite
+7. EvalPlus HumanEval+
+8. One markdown report
+9. Commit report (and new yaml if any)

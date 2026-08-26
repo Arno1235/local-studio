@@ -1,6 +1,6 @@
 Human-readable and JSON reports from the in-repo lab CLI are written to `evaluation/output/` (gitignored) and uploaded as MLflow artifacts.
 
-Unattended GPU benches (smoke + llama-bench + EvalPlus HumanEval+) write a single comparable markdown file here:
+Unattended GPU benches (smoke + served-path speed + EvalPlus HumanEval+) write a single comparable markdown file here:
 
 - Prompt to paste into Cursor on the NEW VM: [`../prompts/run-gpu-bench.md`](../prompts/run-gpu-bench.md)
 - Report schema: [`TEMPLATE-gpu-bench.md`](TEMPLATE-gpu-bench.md)
