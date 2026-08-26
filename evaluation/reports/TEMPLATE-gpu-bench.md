@@ -38,6 +38,7 @@ operator: cursor-new-vm
 | gpu_name | |
 | vram_total_mb | |
 | vram_used_mb_while_serving | |
+| vram_used_mb_after_evict | |
 | n_gpu_layers | |
 | offloaded_layers | |
 | total_layers | |
@@ -52,6 +53,8 @@ operator: cursor-new-vm
 | health | | |
 | download | | |
 | recipe | | |
+| evict | | |
+| llama_bench_ssh | | |
 | launch | | |
 | wait_ready | | |
 | pong_probe | | |
@@ -59,26 +62,29 @@ operator: cursor-new-vm
 Download id (if any):
 Recipe created this run (`yes` / `no`):
 
-## 3. Speed (served path)
+## 3. llama-bench (OLD PC via SSH)
 
-Native `llama-bench` is not used. The OLD PC has no passwordless SSH. This stage hits the loaded OpenAI-compatible server from the NEW VM.
+Native llama.cpp `llama-bench` on the GPU host. Password SSH from the NEW VM. Never record the password.
 
 ```yaml
 status: ok | failed | blocked
-method: served-path-openai-chat
-command: bash new-vm/scripts/run-evaluation.sh served-bench --config evaluation/configs/... --repetitions 3
+method: llama-bench-ssh
+command: bash new-vm/scripts/run-evaluation.sh llama-bench --config evaluation/configs/...
+ssh_user: ""
+ssh_host: ""
+binary: ""
 mlflow_run_id: ""
 ```
 
 ### Results (tok/s)
 
-| test | mean_tok_s | stdev | prompt_tokens_mean | completion_tokens_mean | repetitions |
-| --- | --- | --- | --- | --- | --- |
-| pp512 | | | | | 3 |
-| pp2048 | | | | | 3 |
-| tg128 | | | | | 3 |
+| test | mean_tok_s | stdev | n_prompt | n_gen |
+| --- | --- | --- | --- | --- |
+| pp512 | | | | |
+| pp2048 | | | | |
+| tg128 | | | | |
 
-Comparability: same lab, same recipe, same GPU. Not 1:1 with `llama-bench` binary posts (those exclude HTTP and the chat template).
+Comparability: same flags as typical GGUF posts (`-ngl 99`, pp 512/2048, tg 128). Quant and GPU still have to match for a fair comparison.
 
 Block/fail reason (if not `ok`):
 
@@ -163,7 +169,7 @@ Comparability notes:
 | bench | status | headline |
 | --- | --- | --- |
 | smoke | | pass_rate= ; gen_tok_s= |
-| served-bench | | pp512= ; pp2048= ; tg128= |
+| llama-bench | | pp512= ; pp2048= ; tg128= |
 | humaneval+ | | base= ; plus= |
 
 Overall: one paragraph. What ran, what was blocked, whether GPU-fit held, whether the numbers are publishable as a 1660 Ti Q4 result.

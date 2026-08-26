@@ -21,7 +21,7 @@ Full walkthrough for comparing two models on speed, token use, and accuracy: [`m
 ```bash
 bash new-vm/scripts/run-evaluation.sh run --suite smoke
 bash new-vm/scripts/run-evaluation.sh run --suite standard
-bash new-vm/scripts/run-evaluation.sh served-bench
+bash new-vm/scripts/run-evaluation.sh llama-bench
 bash new-vm/scripts/run-evaluation.sh generate-cursor-review --run-id RUN_ID
 bash new-vm/scripts/run-evaluation.sh import-cursor-review --run-id RUN_ID --file cursor-results.json
 bash new-vm/scripts/run-evaluation.sh import-human-review --run-id RUN_ID --file human-results.json
@@ -41,7 +41,7 @@ Equivalent:
 - `llm_lab_eval/` — runners, scorers, MLflow logging, reports
 - `rubrics/` — Cursor evaluation rubric
 - `schemas/` — import JSON schema
-- `prompts/` — Cursor prompt to run smoke + served-path speed + EvalPlus on the NEW VM
+- `prompts/` — Cursor prompt to run smoke + llama-bench + EvalPlus on the NEW VM
 - `output/` — generated reports (gitignored)
 - `reports/gpu-bench-*.md` — filled unattended GPU-bench summaries (committed)
 
