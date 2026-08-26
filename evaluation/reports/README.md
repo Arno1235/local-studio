@@ -4,7 +4,7 @@ Unattended GPU benches (smoke + llama-bench via SSH + EvalPlus HumanEval+) write
 
 - Prompt to paste into Cursor on the NEW VM: [`../prompts/run-gpu-bench.md`](../prompts/run-gpu-bench.md)
 - Report schema: [`TEMPLATE-gpu-bench.md`](TEMPLATE-gpu-bench.md)
-- Filled reports: `gpu-bench-<served_model_name>.md`
+- Filled reports: `gpu-bench-<served_model_name>.md` (the NEW VM Cursor run commits and pushes this file)
 
 Import Cursor-manual or human JSON with:
 
