@@ -40,7 +40,9 @@ Equivalent:
 - `llm_lab_eval/` — runners, scorers, MLflow logging, reports
 - `rubrics/` — Cursor evaluation rubric
 - `schemas/` — import JSON schema
+- `prompts/` — Cursor prompt to run smoke + llama-bench + EvalPlus on the NEW VM
 - `output/` — generated reports (gitignored)
+- `reports/gpu-bench-*.md` — filled unattended GPU-bench summaries (committed)
 
 ## Efficiency metrics
 
