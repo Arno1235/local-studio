@@ -62,7 +62,7 @@ Run, in order, with no confirmation steps:
 
 `evaluation/reports/gpu-bench-<served_model_name>.md`
 
-Use `evaluation/reports/TEMPLATE-gpu-bench.md`. Overwrite if a previous run exists.
+Use `evaluation/reports/TEMPLATE-gpu-bench.md`. Overwrite if a previous run exists. Then commit and push that report so it is on the remote.
 
 Then stop. Do not start MBPP, Aider, SWE-bench, Cursor-manual review, served-bench, or cloud judges.
 
@@ -258,11 +258,22 @@ Record Base `pass@1`, Plus `pass@1`, tasks  / 164, wall clock, truncated complet
 
 ---
 
-## Stage 6 — write the report
+## Stage 6 — write the report and push it
 
 Write `evaluation/reports/gpu-bench-<served_model_name>.md` from `evaluation/reports/TEMPLATE-gpu-bench.md`.
 
 `status_overall` is `ok` only if llama-bench produced pp512/pp2048/tg128, smoke did not fail GPU-fit, and HumanEval+ produced both pass@1 numbers.
+
+The report must land on the remote, not only on this disk:
+
+```bash
+git add evaluation/reports/gpu-bench-<served_model_name>.md
+# also add evaluation/configs/<recipe_id>.yaml if you created it
+git commit -m "docs(eval): gpu-bench report for <served_model_name>"
+git push -u origin HEAD
+```
+
+Stay on the current branch (do not switch). Push that branch. If `git push` fails, retry with backoff; the job is not done until `origin` has the report file.
 
 Commit **only** the report (and a new `evaluation/configs/<recipe_id>.yaml` if created). Do not commit venvs, `evaluation/output/`, evalplus jsonl, `.env`, or secrets.
 
@@ -278,4 +289,4 @@ Commit **only** the report (and a new `evaluation/configs/<recipe_id>.yaml` if c
 6. Smoke
 7. EvalPlus HumanEval+
 8. One markdown report
-9. Commit report (and new yaml if any)
+9. Commit **and push** the report to origin (and new yaml if any)
