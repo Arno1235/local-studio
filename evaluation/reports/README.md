@@ -2,7 +2,7 @@ Human-readable and JSON reports from the in-repo lab CLI are written to `evaluat
 
 Unattended GPU benches (smoke + llama-bench via SSH + EvalPlus HumanEval+) write a single comparable markdown file here:
 
-- Prompt to paste into Cursor on the NEW VM: [`../prompts/run-gpu-bench.md`](../prompts/run-gpu-bench.md)
+- Prompt to paste into Cursor on the NEW VM (one file per model): [`../prompts/run-gpu-bench-gemma-4-e4b-it-q4km.md`](../prompts/run-gpu-bench-gemma-4-e4b-it-q4km.md), [`../prompts/run-gpu-bench-qwen3.5-9b-q4km.md`](../prompts/run-gpu-bench-qwen3.5-9b-q4km.md), [`../prompts/run-gpu-bench-gemma-4-e2b-it-ud-q8k-xl.md`](../prompts/run-gpu-bench-gemma-4-e2b-it-ud-q8k-xl.md)
 - Report schema: [`TEMPLATE-gpu-bench.md`](TEMPLATE-gpu-bench.md)
 - Filled reports: `gpu-bench-<served_model_name>.md` (the NEW VM Cursor run commits and pushes this file)
 
